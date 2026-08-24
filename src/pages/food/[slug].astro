@@ -20,6 +20,7 @@ import {
 import { THAI_RDI } from '../../lib/health'
 import { CTA_TAUNTS } from '../../data/taunts'
 import { analyseFood, pickActivitiesForFood } from '../../lib/food-insights'
+import { getFoodContent } from '../../data/food-content'
 
 /**
  * Programmatic SEO รายเมนู — ตอบคำค้นที่คนไทยพิมพ์หากันมากที่สุด
@@ -68,6 +69,7 @@ const percentOfDay = Math.round((food.kcal / THAI_RDI.male) * 100)
 const riceEquivalent = Math.round((food.kcal / 240) * 10) / 10
 
 const analysis = analyseFood(food)
+const content = getFoodContent(food.slug)
 
 const related = POPULAR_FOODS.filter(
   (f) => f.category === food.category && f.slug !== food.slug,
@@ -81,6 +83,12 @@ const jsonLd = [
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: [
+      // คำถามที่เขียนเฉพาะเมนูนี้ — ทำให้ rich result ของแต่ละหน้าไม่ซ้ำกัน
+      ...(content?.faq ?? []).map((item) => ({
+        '@type': 'Question',
+        name: item.q,
+        acceptedAnswer: { '@type': 'Answer', text: item.a },
+      })),
       {
         '@type': 'Question',
         name: `${food.name} อ้วนไหม?`,
@@ -262,6 +270,46 @@ const jsonLd = [
     </div>
   </section>
 
+  <!-- ================= เนื้อหาเฉพาะเมนูนี้ ================= -->
+  {
+    content && (
+      <section class="border-b-4 border-steel px-4 py-14">
+        <div class="mx-auto max-w-3xl">
+          <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
+            {food.kcal.toLocaleString()} แคลอรี่ของ{food.name}มาจากไหน
+          </h2>
+          <p class="mt-4 text-base leading-relaxed text-neutral-300">{content.intro}</p>
+
+          <div class="mt-8 grid gap-6 sm:grid-cols-2">
+            <div class="border-4 border-blood bg-concrete p-5">
+              <h3 class="font-display text-lg font-black text-blood">🔍 ตัวการที่ทำให้แคลสูง</h3>
+              <ul class="mt-3 space-y-2">
+                {content.culprits.map((item) => (
+                  <li class="flex gap-2 text-sm leading-relaxed text-neutral-300">
+                    <span class="shrink-0 text-blood">▸</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div class="border-4 border-hazard bg-concrete p-5">
+              <h3 class="font-display text-lg font-black text-hazard">✅ สั่งแบบนี้ลดแคลได้จริง</h3>
+              <ul class="mt-3 space-y-2">
+                {content.tips.map((item) => (
+                  <li class="flex gap-2 text-sm leading-relaxed text-neutral-300">
+                    <span class="shrink-0 text-hazard">▸</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   <!-- ================= ตารางกิจกรรม ================= -->
   <section class="px-4 py-14">
     <div class="mx-auto max-w-3xl">
@@ -369,6 +417,27 @@ const jsonLd = [
 
     <CalculatorFlow client:visible defaultFood={{ name: food.name, kcal: food.kcal }} />
   </section>
+
+  <!-- ================= FAQ เฉพาะเมนู ================= -->
+  {
+    content && content.faq.length > 0 && (
+      <section class="border-t-4 border-steel px-4 py-14">
+        <div class="mx-auto max-w-3xl">
+          <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
+            คำถามที่คนถามบ่อยเรื่อง{food.name}
+          </h2>
+          <dl class="mt-6 space-y-4">
+            {content.faq.map((item) => (
+              <div class="border-4 border-steel bg-concrete p-5">
+                <dt class="font-display text-base font-black text-hazard sm:text-lg">{item.q}</dt>
+                <dd class="mt-2 text-sm leading-relaxed text-neutral-300">{item.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+    )
+  }
 
   <!-- ================= เมนูใกล้เคียง ================= -->
   {
