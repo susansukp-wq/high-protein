@@ -197,14 +197,13 @@ const anonClient = createClient(env.PUBLIC_SUPABASE_URL, env.PUBLIC_SUPABASE_ANO
 const { error: signInError } = await anonClient.auth.signInAnonymously()
 
 if (signInError) {
-  bad(
-    `anonymous sign-in ใช้ไม่ได้: ${signInError.message}`,
-    'เปิดที่ Dashboard > Authentication > Providers > Allow anonymous sign-ins',
-  )
-  info('ถ้าไม่เปิด ผู้ใช้จะสร้างโปรไฟล์และบันทึกหนี้ไม่ได้เลย')
-} else {
-  ok('anonymous sign-in ใช้งานได้')
+  console.log(`  ❌ anonymous sign-in ใช้ไม่ได้: ${signInError.message}`)
+  console.log('     → เปิดที่ Dashboard > Authentication > Providers > Allow anonymous sign-ins')
+  console.log('     ถ้าไม่เปิด ผู้ใช้จะสร้างโปรไฟล์และบันทึกหนี้ไม่ได้เลย')
+  process.exit(1)
 }
+
+console.log('  ✅ anonymous sign-in ใช้งานได้')
 
 const { count: orphan } = await admin
   .from('profiles')
@@ -214,9 +213,9 @@ const { count: orphan } = await admin
 
 if ((orphan ?? 0) > 0) {
   console.log(`  ℹ️  มีโปรไฟล์เก่า ${orphan} รายการที่ยังไม่มีเจ้าของ`)
-  info('จะถูกอ้างสิทธิ์อัตโนมัติเมื่อเจ้าของกลับมาเปิดเว็บ (ใช้ device_id ที่เก็บในเครื่อง)')
+  console.log('     จะถูกอ้างสิทธิ์อัตโนมัติเมื่อเจ้าของกลับมาเปิดเว็บ (ใช้ device_id ที่เก็บในเครื่อง)')
 } else {
-  ok('โปรไฟล์ทุกรายการผูกกับผู้ใช้แล้ว')
+  console.log('  ✅ โปรไฟล์ทุกรายการผูกกับผู้ใช้แล้ว')
 }
 
 /* --------------------------------- เสร็จ ---------------------------------- */
