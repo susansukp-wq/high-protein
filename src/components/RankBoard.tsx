@@ -6,11 +6,14 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
+import { parseRecoveryCode } from '../lib/device'
 import {
   getHallOfFame,
   getMyLogs,
   getMyProfile,
+  getRecoveryCode,
   getWallOfShame,
+  restoreProfile,
   settleBurnLog,
 } from '../lib/profile'
 import {
@@ -55,6 +58,20 @@ export default function RankBoard() {
     void refresh().finally(() => setIsLoading(false))
   }, [refresh])
 
+  async function handleRestore(code: string) {
+    setIsBusy(true)
+    const { error: restoreError } = await restoreProfile(code)
+    setIsBusy(false)
+
+    if (restoreError) {
+      setError(restoreError)
+      return
+    }
+
+    setError('')
+    await refresh()
+  }
+
   async function handleSettle(logId: string) {
     setIsBusy(true)
     const { error: settleError } = await settleBurnLog(logId)
@@ -78,7 +95,11 @@ export default function RankBoard() {
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8">
       {/* ---------- การ์ดยศของฉัน ---------- */}
-      {profile ? <MyRankCard profile={profile} pendingCount={pendingLogs.length} /> : <RegisterCard />}
+      {profile ? (
+        <MyRankCard profile={profile} pendingCount={pendingLogs.length} />
+      ) : (
+        <RegisterCard isBusy={isBusy} onRestore={handleRestore} />
+      )}
 
       {error && (
         <p
@@ -174,6 +195,8 @@ function MyRankCard({ profile, pendingCount }: { profile: Profile; pendingCount:
           <Stat label="รายการค้าง" value={`${pendingCount} รายการ`} />
         </dl>
 
+        <RecoveryCode />
+
         {profile.debt_minutes >= SHAME_THRESHOLD_MINUTES && (
           <p className="danger-stripes animate-siren p-1">
             <span className="block bg-void px-4 py-3 text-sm font-black text-red-300">
@@ -183,6 +206,61 @@ function MyRankCard({ profile, pendingCount }: { profile: Profile; pendingCount:
         )}
       </div>
     </section>
+  )
+}
+
+/**
+ * รหัสกู้ยศ — ให้ผู้ใช้เก็บไว้ย้ายเครื่องหรือกู้คืนหลังล้างข้อมูลเบราว์เซอร์
+ * ไม่แสดงทันที ต้องกดเปิดก่อน เพราะใครเห็นรหัสก็เข้าถึงโปรไฟล์นั้นได้
+ */
+function RecoveryCode() {
+  const [revealed, setRevealed] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const code = getRecoveryCode()
+
+  if (!code) return null
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(code!)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      /* เบราว์เซอร์ไม่ให้เข้าถึงคลิปบอร์ด — ผู้ใช้ยังเลือกข้อความเองได้ */
+    }
+  }
+
+  return (
+    <div className="border-2 border-steel bg-void p-4">
+      <p className="text-xs font-black tracking-wider text-neutral-500 uppercase">รหัสกู้ยศ</p>
+      <p className="mt-1 text-xs leading-relaxed text-neutral-400">
+        เก็บรหัสนี้ไว้ ถ้าล้างข้อมูลเบราว์เซอร์หรือเปลี่ยนเครื่อง
+        เอารหัสไปกรอกแล้วยศทั้งหมดจะกลับมา — ใครได้รหัสไปก็เข้าถึงโปรไฟล์คุณได้ อย่าแชร์ให้ใคร
+      </p>
+
+      {revealed ? (
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <code className="flex-1 border-2 border-hazard bg-concrete px-3 py-2 font-mono text-sm break-all text-hazard">
+            {code}
+          </code>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="shrink-0 border-2 border-hazard px-4 py-2 text-xs font-black text-hazard transition hover:bg-hazard hover:text-void"
+          >
+            {copied ? '✅ คัดลอกแล้ว' : 'คัดลอก'}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setRevealed(true)}
+          className="mt-3 border-2 border-steel px-4 py-2 text-xs font-black text-neutral-300 transition hover:border-hazard hover:text-hazard"
+        >
+          👁 แสดงรหัส
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -209,7 +287,16 @@ function Stat({
  * สมัครขึ้นบอร์ด
  * ======================================================================== */
 
-function RegisterCard() {
+function RegisterCard({
+  isBusy,
+  onRestore,
+}: {
+  isBusy: boolean
+  onRestore: (code: string) => void
+}) {
+  const [code, setCode] = useState('')
+  const canRestore = parseRecoveryCode(code) !== null
+
   return (
     <section className="panel-brutal border-hazard bg-concrete">
       <div className="hazard-stripes h-3 w-full" aria-hidden="true" />
@@ -230,6 +317,34 @@ function RegisterCard() {
         <p className="text-xs text-neutral-600">
           ไม่ต้องล็อกอิน ไม่ต้องใส่อีเมล — ตัวตนผูกกับเบราว์เซอร์เครื่องนี้
         </p>
+
+        {/* กู้ยศจากเครื่องเดิม */}
+        <div className="border-t-2 border-steel pt-4">
+          <p className="text-xs font-black tracking-wider text-neutral-500 uppercase">
+            เคยเล่นแล้วแต่ยศหาย?
+          </p>
+          <p className="mt-1 text-xs text-neutral-400">
+            ถ้ามีรหัสกู้ยศจากเครื่องเดิม กรอกตรงนี้เพื่อเอายศกลับคืน
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <input
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && canRestore && onRestore(code)}
+              placeholder="NMD-XXXX-XXXX-XXXX-XXXX"
+              className="flex-1 border-2 border-steel bg-void px-3 py-2 font-mono text-sm text-white outline-none transition placeholder:text-neutral-600 focus:border-hazard"
+            />
+            <button
+              type="button"
+              onClick={() => onRestore(code)}
+              disabled={!canRestore || isBusy}
+              className="shrink-0 border-2 border-steel px-4 py-2 text-xs font-black text-neutral-300 transition hover:border-hazard hover:text-hazard disabled:cursor-not-allowed disabled:text-neutral-600"
+            >
+              {isBusy ? 'กำลังกู้...' : 'กู้ยศ'}
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   )

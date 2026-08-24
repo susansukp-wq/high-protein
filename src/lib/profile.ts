@@ -12,10 +12,19 @@ import { supabase, supabaseConfigError, type Result } from './supabase'
 import type { BurnLog, LeaderboardRow, Profile } from './types'
 import type { BodyProfile, Gender } from './health'
 import { SHAME_THRESHOLD_MINUTES } from './ranks'
-import { getDeviceId, rememberProfileId } from './device'
+import { applyRecoveryCode, getDeviceId, parseRecoveryCode, rememberProfileId } from './device'
 
 // re-export ให้โค้ดเดิมที่ import จากไฟล์นี้ยังใช้ได้
-export { forgetProfile, getCachedProfileId, getDeviceId, peekDeviceId } from './device'
+export {
+  applyRecoveryCode,
+  forgetProfile,
+  formatRecoveryCode,
+  getCachedProfileId,
+  getDeviceId,
+  getRecoveryCode,
+  parseRecoveryCode,
+  peekDeviceId,
+} from './device'
 
 /** คอลัมน์ที่ใช้แสดงบนบอร์ด — ไม่ดึง device_id กับข้อมูลร่างกายออกมาโดยไม่จำเป็น */
 const LEADERBOARD_COLUMNS =
@@ -64,6 +73,38 @@ function validateProfileInput(input: ProfileInput): string | null {
     return 'อายุต้องอยู่ระหว่าง 10–120 ปี'
 
   return null
+}
+
+/**
+ * ตรวจว่ารหัสกู้ยศใช้ได้จริงก่อนเขียนทับตัวตนเดิม
+ *
+ * สำคัญ: ถ้าเขียนทับก่อนตรวจ แล้วรหัสผิด ผู้ใช้จะเสียตัวตนเดิมไปฟรีๆ
+ * จึงต้องยิงถาม DB ให้แน่ใจว่ามีโปรไฟล์นั้นอยู่จริงก่อนเสมอ
+ */
+export async function findProfileByRecoveryCode(code: string): Promise<Result<Profile | null>> {
+  if (supabaseConfigError) return { data: null, error: supabaseConfigError }
+
+  const deviceId = parseRecoveryCode(code)
+  if (!deviceId) {
+    return { data: null, error: 'รูปแบบรหัสไม่ถูกต้อง — ต้องขึ้นต้นด้วย NMD- และยาวพอ' }
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('device_id', deviceId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[findProfileByRecoveryCode]', error.message)
+    return { data: null, error: `ตรวจสอบรหัสไม่สำเร็จ: ${error.message}` }
+  }
+
+  if (!data) {
+    return { data: null, error: 'ไม่พบโปรไฟล์ที่ตรงกับรหัสนี้ ลองตรวจว่าพิมพ์ครบไหม' }
+  }
+
+  return { data: data as Profile, error: null }
 }
 
 /** สร้างโปรไฟล์ใหม่พร้อมข้อมูลร่างกาย */
@@ -259,4 +300,19 @@ export async function getWallOfShame(limit = 20): Promise<Result<LeaderboardRow[
   }
 
   return { data: (data ?? []) as LeaderboardRow[], error: null }
+}
+
+/**
+ * กู้ยศด้วยรหัส — ตรวจกับ DB ก่อน ถ้าเจอค่อยเขียนทับตัวตนในเครื่อง
+ */
+export async function restoreProfile(code: string): Promise<Result<Profile | null>> {
+  const { data, error } = await findProfileByRecoveryCode(code)
+  if (error || !data) return { data: null, error: error ?? 'ไม่พบโปรไฟล์' }
+
+  if (!applyRecoveryCode(code)) {
+    return { data: null, error: 'เบราว์เซอร์นี้บันทึกข้อมูลไม่ได้ (ลองปิดโหมดส่วนตัว)' }
+  }
+
+  rememberProfileId(data.id)
+  return { data, error: null }
 }

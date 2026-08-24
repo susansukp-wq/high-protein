@@ -65,3 +65,71 @@ export function forgetProfile(): void {
     /* ignore */
   }
 }
+
+/* ==========================================================================
+ * รหัสกู้ยศ — ย้ายเครื่อง / กู้คืนหลังล้างข้อมูลเบราว์เซอร์
+ * ------------------------------------------------------------------------
+ * ตัวตนของผู้ใช้ผูกกับ device id ใน localStorage อย่างเดียว
+ * ล้างข้อมูลเว็บไซต์เมื่อไหร่ ยศที่สะสมมาทั้งหมดจะเข้าถึงไม่ได้อีก
+ * ซึ่งทำให้คนไม่กล้าลงแรงสะสมระยะยาว
+ *
+ * รหัสกู้ยศคือ device id ตัวเดียวกันนั่นเอง แค่จัดรูปแบบให้อ่านและพิมพ์ง่ายขึ้น
+ * ใครถือรหัสก็เข้าถึงโปรไฟล์นั้นได้ จึงต้องเตือนผู้ใช้ให้เก็บเป็นความลับ
+ * ======================================================================== */
+
+/**
+ * device id ที่เราสร้าง มี 2 รูปแบบ
+ *   crypto.randomUUID()  →  a3f8c1d2-4b5e-6789-abcd-ef0123456789
+ *   fallback             →  dev-1735012345678-k3f9x2ab
+ */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+const FALLBACK_RE = /^dev-\d+-[a-z0-9]+$/
+
+/**
+ * จัดรูปแบบรหัสกู้ยศ
+ *
+ * ห้ามตัดตัวอักษรทิ้งเด็ดขาด เพราะรหัสต้องแปลงกลับเป็น device id เดิมได้เป๊ะ
+ * ไม่งั้นตอนค้นใน DB จะหาไม่เจอ แล้วฟีเจอร์กู้ยศจะพังทั้งระบบ
+ * จึงแค่เติม prefix กับทำเป็นตัวพิมพ์ใหญ่เพื่อให้อ่านและบอกต่อทางโทรศัพท์ง่ายขึ้น
+ */
+export function formatRecoveryCode(deviceId: string): string {
+  return `NMD-${deviceId.toUpperCase()}`
+}
+
+/** รหัสกู้ยศของเครื่องนี้ — null ถ้ายังไม่เคยลงทะเบียน */
+export function getRecoveryCode(): string | null {
+  const id = peekDeviceId()
+  return id ? formatRecoveryCode(id) : null
+}
+
+/**
+ * แปลงรหัสที่ผู้ใช้กรอกกลับเป็น device id
+ *
+ * รับได้ทั้งมีและไม่มี prefix, ตัวพิมพ์เล็กหรือใหญ่, มีช่องว่างหน้าหลัง
+ * แต่ต้องตรงรูปแบบ id ที่ระบบสร้างจริงเท่านั้น — ถ้าไม่ตรงคืน null
+ * เพื่อไม่ให้เขียนค่าขยะทับตัวตนเดิมของผู้ใช้
+ */
+export function parseRecoveryCode(input: string): string | null {
+  const clean = input
+    .trim()
+    .replace(/^NMD[-\s]*/i, '')
+    .replace(/\s+/g, '')
+    .toLowerCase()
+
+  if (UUID_RE.test(clean) || FALLBACK_RE.test(clean)) return clean
+  return null
+}
+
+/** ใช้รหัสกู้ยศ — เขียนทับตัวตนของเครื่องนี้ */
+export function applyRecoveryCode(input: string): boolean {
+  const id = parseRecoveryCode(input)
+  if (!id) return false
+
+  try {
+    localStorage.setItem(DEVICE_KEY, id)
+    localStorage.removeItem(PROFILE_KEY)
+    return true
+  } catch {
+    return false
+  }
+}
