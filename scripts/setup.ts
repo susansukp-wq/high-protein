@@ -72,7 +72,7 @@ function isMissingTable(error: { code?: string; message: string }): boolean {
 
 console.log(`\n🔧 ${b('ตั้งค่าโปรเจกต์ "ลดน้ำหนักไม่มีคำว่าปลอบใจ"')}`)
 
-const TOTAL = 5
+const TOTAL = 6
 step(1, TOTAL, 'ตรวจไฟล์ .env')
 
 const env = {
@@ -175,6 +175,49 @@ if (bodyError) {
 }
 
 console.log('  ✅ โปรไฟล์เก็บ เพศ/ส่วนสูง/น้ำหนัก/อายุ ได้แล้ว')
+
+/* ------------------------- 6. ผูกตัวตนกับ Auth ------------------------- */
+
+step(6, TOTAL, 'ตรวจการผูกตัวตนกับ Supabase Auth')
+
+const { error: userIdError } = await admin.from('profiles').select('user_id').limit(1)
+
+if (userIdError) {
+  if (userIdError.message.includes('column') || userIdError.code === '42703') {
+    requireMigration('supabase/auth-schema.sql', 'การผูกตัวตนกับ Auth', env.SUPABASE_URL)
+  }
+  console.log(`  ❌ ${userIdError.message}`)
+  process.exit(1)
+}
+
+// ตรวจว่าเปิด anonymous sign-in ไว้จริง ไม่งั้นผู้ใช้จะสร้างโปรไฟล์ไม่ได้เลย
+const anonClient = createClient(env.PUBLIC_SUPABASE_URL, env.PUBLIC_SUPABASE_ANON_KEY, {
+  auth: { persistSession: false },
+})
+const { error: signInError } = await anonClient.auth.signInAnonymously()
+
+if (signInError) {
+  bad(
+    `anonymous sign-in ใช้ไม่ได้: ${signInError.message}`,
+    'เปิดที่ Dashboard > Authentication > Providers > Allow anonymous sign-ins',
+  )
+  info('ถ้าไม่เปิด ผู้ใช้จะสร้างโปรไฟล์และบันทึกหนี้ไม่ได้เลย')
+} else {
+  ok('anonymous sign-in ใช้งานได้')
+}
+
+const { count: orphan } = await admin
+  .from('profiles')
+  .select('id', { count: 'exact' })
+  .is('user_id', null)
+  .limit(1)
+
+if ((orphan ?? 0) > 0) {
+  console.log(`  ℹ️  มีโปรไฟล์เก่า ${orphan} รายการที่ยังไม่มีเจ้าของ`)
+  info('จะถูกอ้างสิทธิ์อัตโนมัติเมื่อเจ้าของกลับมาเปิดเว็บ (ใช้ device_id ที่เก็บในเครื่อง)')
+} else {
+  ok('โปรไฟล์ทุกรายการผูกกับผู้ใช้แล้ว')
+}
 
 /* --------------------------------- เสร็จ ---------------------------------- */
 

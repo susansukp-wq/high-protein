@@ -31,6 +31,28 @@ const LEADERBOARD_COLUMNS =
   'id, nickname, total_paid_minutes, debt_minutes, current_streak, best_streak'
 
 /* ==========================================================================
+ * SESSION
+ * ------------------------------------------------------------------------
+ * ใช้ anonymous sign-in ของ Supabase — ผู้ใช้ไม่ต้องกรอกอะไรเพิ่มเลย
+ * แต่ได้ auth.uid() ที่ RLS ใช้ตรวจสิทธิ์ได้จริง
+ * ======================================================================== */
+
+/** ให้แน่ใจว่ามี session ก่อนเขียนข้อมูล — คืน user id หรือ null ถ้าล้มเหลว */
+export async function ensureSession(): Promise<string | null> {
+  if (supabaseConfigError) return null
+
+  const { data: existing } = await supabase.auth.getSession()
+  if (existing.session?.user?.id) return existing.session.user.id
+
+  const { data, error } = await supabase.auth.signInAnonymously()
+  if (error) {
+    console.error('[ensureSession]', error.message)
+    return null
+  }
+  return data.user?.id ?? null
+}
+
+/* ==========================================================================
  * PROFILE
  * ======================================================================== */
 
@@ -52,8 +74,26 @@ export async function getMyProfile(): Promise<Profile | null> {
     return null
   }
 
-  if (data) rememberProfileId((data as Profile).id)
-  return (data as Profile) ?? null
+  let profile = data as Profile | null
+  if (!profile) return null
+
+  /*
+   * โปรไฟล์นี้อาจยังไม่ผูกกับผู้ใช้คนนี้ ใน 2 กรณี
+   *   1. สร้างไว้ก่อนที่ระบบจะมี auth
+   *   2. session เดิมหมดอายุ แล้วได้ผู้ใช้ anonymous คนใหม่
+   * ทั้งสองกรณีเจ้าของตัวจริงถือ device_id อยู่ จึงมีสิทธิ์อ้างคืนได้
+   */
+  const userId = await ensureSession()
+  if (userId && profile.user_id !== userId) {
+    const { data: claimed, error: claimError } = await supabase.rpc('claim_profile', {
+      p_device_id: deviceId,
+    })
+    if (claimError) console.error('[getMyProfile] claim', claimError.message)
+    else if (claimed) profile = claimed as Profile
+  }
+
+  rememberProfileId(profile.id)
+  return profile
 }
 
 export interface ProfileInput extends Partial<BodyProfile> {
@@ -122,10 +162,16 @@ export async function createProfile(input: ProfileInput): Promise<Result<Profile
     }
   }
 
+  const userId = await ensureSession()
+  if (!userId) {
+    return { data: null, error: 'สร้าง session ไม่สำเร็จ — ลองรีเฟรชหน้าเว็บอีกครั้ง' }
+  }
+
   const { data, error } = await supabase
     .from('profiles')
     .insert({
       device_id: deviceId,
+      user_id: userId,
       nickname: input.nickname.trim(),
       gender: input.gender ?? null,
       height_cm: input.heightCm ?? null,
@@ -156,11 +202,10 @@ export async function updateBodyProfile(input: ProfileInput): Promise<Result<Pro
   const invalid = validateProfileInput(input)
   if (invalid) return { data: null, error: invalid }
 
-  const deviceId = getDeviceId()
-  if (!deviceId) return { data: null, error: 'ไม่พบตัวตนของเครื่องนี้' }
+  const userId = await ensureSession()
+  if (!userId) return { data: null, error: 'สร้าง session ไม่สำเร็จ — ลองรีเฟรชหน้าเว็บ' }
 
-  const { data, error } = await supabase.rpc('update_body_profile', {
-    p_device_id: deviceId,
+  const { data, error } = await supabase.rpc('update_my_profile', {
     p_nickname: input.nickname.trim(),
     p_gender: (input.gender ?? null) as Gender | null,
     p_height_cm: input.heightCm ?? null,
@@ -311,6 +356,21 @@ export async function restoreProfile(code: string): Promise<Result<Profile | nul
 
   if (!applyRecoveryCode(code)) {
     return { data: null, error: 'เบราว์เซอร์นี้บันทึกข้อมูลไม่ได้ (ลองปิดโหมดส่วนตัว)' }
+  }
+
+  // เปลี่ยนเจ้าของให้เป็นผู้ใช้ของเครื่องนี้ ไม่งั้นจะอ่านได้แต่บันทึกอะไรไม่ได้
+  const userId = await ensureSession()
+  if (userId) {
+    const deviceId = parseRecoveryCode(code)
+    const { data: claimed, error: claimError } = await supabase.rpc('claim_profile', {
+      p_device_id: deviceId,
+    })
+    if (claimError) {
+      console.error('[restoreProfile] claim', claimError.message)
+      return { data: null, error: `กู้ยศไม่สำเร็จ: ${claimError.message}` }
+    }
+    rememberProfileId((claimed as Profile).id)
+    return { data: claimed as Profile, error: null }
   }
 
   rememberProfileId(data.id)

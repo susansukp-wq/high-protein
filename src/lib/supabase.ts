@@ -62,7 +62,13 @@ export const supabase: SupabaseClient = createClient(
   SUPABASE_URL || 'http://127.0.0.1:54321',
   SUPABASE_ANON_KEY || 'not-configured',
   {
-    auth: { persistSession: false },
+    auth: {
+      // ฝั่ง client ต้องเก็บ session ไว้ ไม่งั้นทุกครั้งที่รีเฟรชจะได้ผู้ใช้ anonymous คนใหม่
+      // แล้วสิทธิ์เข้าถึงโปรไฟล์เดิมจะหลุด
+      // ตอน build (SSR) ไม่ต้องเก็บ เพราะดึงข้อมูลสาธารณะอย่างเดียว
+      persistSession: !import.meta.env.SSR,
+      autoRefreshToken: !import.meta.env.SSR,
+    },
     // ไม่ได้ใช้ realtime subscription — ลด heartbeat ไม่ให้กิน resource ตอน build
     realtime: { params: { eventsPerSecond: 1 } },
   },

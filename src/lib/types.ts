@@ -86,8 +86,10 @@ export interface Roast extends RoastInsert {
 
 export interface Profile {
   id: string
-  /** ตัวตนแบบไม่ล็อกอิน — generate ในเบราว์เซอร์ เก็บใน localStorage */
+  /** ตัวตนแบบไม่ล็อกอิน — generate ในเบราว์เซอร์ เก็บใน localStorage (ใช้เป็นรหัสกู้ยศ) */
   device_id: string
+  /** ผู้ใช้ anonymous ของ Supabase Auth ที่เป็นเจ้าของโปรไฟล์นี้ — RLS ใช้ตรวจสิทธิ์ */
+  user_id: string | null
   nickname: string
   /** ---- ข้อมูลร่างกาย (nullable เพราะโปรไฟล์เก่ายังไม่มี) ---- */
   gender: import('./health').Gender | null
