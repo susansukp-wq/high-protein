@@ -1,0 +1,45 @@
+{
+  "name": "no-mercy-diet",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "ลดน้ำหนักไม่มีคำว่าปลอบใจ — คำนวณแคลอรี่พร้อมคำจิกกัด",
+  "engines": {
+    "node": ">=20.3.0"
+  },
+  "scripts": {
+    "setup": "tsx scripts/setup.ts",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "doctor": "tsx scripts/doctor.ts",
+    "seed": "tsx scripts/seed.ts",
+    "seed:fresh": "tsx scripts/seed.ts --fresh",
+    "seed:check": "tsx scripts/seed.ts --dry-run",
+    "typecheck": "astro check",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.3.0",
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/anuphan": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "@supabase/supabase-js": "^2.58.0",
+    "@types/ws": "^8.18.1",
+    "astro": "^5.13.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "satori": "^0.33.3",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "dotenv": "^17.0.0",
+    "tailwindcss": "^4.1.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

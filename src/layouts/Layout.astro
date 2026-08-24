@@ -1,0 +1,134 @@
+---
+import '../styles/global.css'
+import AdSenseScript from '../components/AdSenseScript.astro'
+
+interface Props {
+  title: string
+  description: string
+  keywords?: string[]
+  /** JSON-LD structured data (จะถูก serialize ใส่ <script type="application/ld+json">) */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[]
+  /** path ของรูป OG เช่น "/og/running.png" — ต้องมีเสมอ ไม่งั้นแชร์ไปแล้วเป็นกล่องเปล่า */
+  ogImage?: string
+}
+
+const {
+  title,
+  description,
+  keywords = [],
+  jsonLd,
+  ogImage = '/og/home.png',
+} = Astro.props
+
+const siteOrigin = Astro.site ?? 'http://localhost:4321'
+const canonicalURL = new URL(Astro.url.pathname, siteOrigin)
+// og:image ต้องเป็น absolute URL เสมอ — Facebook/LINE ไม่ยอมรับ path สั้น
+const ogImageURL = new URL(ogImage, siteOrigin)
+const siteName = 'ลดน้ำหนักไม่มีคำว่าปลอบใจ'
+---
+
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Primary SEO -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {/* Google เลิกใช้ meta keywords ตั้งแต่ปี 2009 — เก็บไว้เผื่อ search engine อื่นเท่านั้น */}
+    {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="th_TH" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+
+    <!-- AdSense -->
+    <AdSenseScript />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    {
+      jsonLd && (
+        <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+      )
+    }
+  </head>
+
+  <body class="min-h-screen bg-void text-neutral-100">
+    <div class="hazard-stripes h-2 w-full" aria-hidden="true"></div>
+
+    <header class="border-b-4 border-steel">
+      <nav class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
+        <a href="/" class="font-display text-base font-black text-hazard sm:text-lg">
+          🔥 ลดน้ำหนัก<span class="text-blood">ไม่มีคำว่าปลอบใจ</span>
+        </a>
+        <div class="flex items-center gap-2">
+          <a
+            href="/rank"
+            class="border-2 border-steel px-3 py-1.5 text-xs font-black text-neutral-300 transition hover:border-hazard hover:text-hazard"
+          >
+            🏆 อันดับ
+          </a>
+          <a
+            href="/#calculator"
+            class="border-2 border-hazard px-3 py-1.5 text-xs font-black text-hazard transition hover:bg-hazard hover:text-void"
+          >
+            คำนวณโทษ
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="mt-20 border-t-4 border-steel">
+      <div class="mx-auto max-w-5xl space-y-3 px-4 py-10 text-center text-xs text-neutral-500">
+        <p class="font-display text-sm font-black text-neutral-400">
+          เว็บนี้ไม่มีหน้าที่ปลอบใจใคร มีหน้าที่บอกความจริง
+        </p>
+
+        <nav aria-label="ลิงก์ท้ายเว็บ" class="flex flex-wrap justify-center gap-x-5 gap-y-2 font-bold">
+          <a href="/about" class="hover:text-hazard">เกี่ยวกับเรา</a>
+          <a href="/rank" class="hover:text-hazard">จัดอันดับ</a>
+          <a href="/privacy" class="hover:text-hazard">นโยบายความเป็นส่วนตัว</a>
+          <a href="/contact" class="hover:text-hazard">ติดต่อเรา</a>
+        </nav>
+        <p>
+          ตัวเลขทั้งหมดคำนวณจากค่า METs (Compendium of Physical Activities)
+          เป็นค่าประมาณเพื่อความบันเทิงและสร้างแรงจูงใจ ไม่ใช่คำแนะนำทางการแพทย์
+        </p>
+        <p>© {new Date().getFullYear()} {siteName}</p>
+      </div>
+    </footer>
+  </body>
+</html>

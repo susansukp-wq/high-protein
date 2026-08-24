@@ -1,0 +1,36 @@
+---
+/**
+ * AdSenseScript.astro — โหลดสคริปต์ AdSense เข้า <head>
+ *
+ * วางไว้ใน Layout เพื่อให้ทุกหน้าได้สคริปต์ตัวเดียวกัน
+ * ถ้ายังไม่ได้ตั้ง PUBLIC_ADSENSE_CLIENT_ID จะไม่ render อะไรเลย
+ * ทำให้ตอน dev ในเครื่องไม่ยิง request ออกไปหา Google และไม่เสี่ยง invalid traffic
+ *
+ * หมายเหตุ: async + crossorigin เป็นรูปแบบที่ Google กำหนด ห้ามเปลี่ยน
+ */
+const clientId = import.meta.env.PUBLIC_ADSENSE_CLIENT_ID ?? ''
+const isEnabled = clientId.startsWith('ca-pub-')
+
+if (clientId && !isEnabled) {
+  console.warn(
+    `\n⚠️  [AdSense] PUBLIC_ADSENSE_CLIENT_ID ต้องขึ้นต้นด้วย "ca-pub-" แต่ได้ค่า "${clientId.slice(0, 12)}..."\n` +
+      '   โฆษณาจะไม่ถูกโหลดจนกว่าจะแก้ให้ถูกรูปแบบ\n',
+  )
+}
+---
+
+{
+  isEnabled && (
+    <>
+      {/* preconnect ช่วยลดเวลา handshake ของ request แรกไปหา ad server */}
+      <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
+      <link rel="preconnect" href="https://googleads.g.doubleclick.net" crossorigin />
+
+      <script
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${clientId}`}
+        crossorigin="anonymous"
+      />
+    </>
+  )
+}

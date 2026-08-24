@@ -1,0 +1,407 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import CalculatorFlow from '../../components/CalculatorFlow.tsx'
+import AdPlaceholder from '../../components/AdPlaceholder.tsx'
+import { AD_SLOTS } from '../../config/ads'
+import { getActivities } from '../../lib/supabase'
+import {
+  FOOD_CATEGORY_LABEL,
+  FOOD_CATEGORY_NOTE,
+  POPULAR_FOODS,
+  computeFoodKcal,
+  getAddonsFor,
+} from '../../data/popular-foods'
+import {
+  DEFAULT_WEIGHT_KG,
+  calculateBurnTime,
+  formatDuration,
+  formatDurationShort,
+} from '../../lib/calculator'
+import { THAI_RDI } from '../../lib/health'
+import { CTA_TAUNTS } from '../../data/taunts'
+import { analyseFood, pickActivitiesForFood } from '../../lib/food-insights'
+
+/**
+ * Programmatic SEO รายเมนู — ตอบคำค้นที่คนไทยพิมพ์หากันมากที่สุด
+ * เช่น "กะเพราหมูกรอบกี่แคล", "ชานมไข่มุกกี่แคลอรี่"
+ *
+ * ดึง activities ครั้งเดียวแล้วแจกให้ทุกหน้า (เลี่ยง N+1 query ตอน build)
+ */
+export async function getStaticPaths() {
+  const { data: activities } = await getActivities()
+
+  return POPULAR_FOODS.map((food) => ({
+    params: { slug: food.slug },
+    props: { food, activities },
+  }))
+}
+
+const { food, activities } = Astro.props
+
+const PORTIONS = [0.5, 1, 1.5, 2, 3] as const
+
+/** ต้องทำกิจกรรมแต่ละอย่างกี่นาที — ตารางนี้ต่างกันทุกหน้าเพราะแคลอรี่ต่างกัน */
+const activityRows = pickActivitiesForFood(food, activities)
+  .map((activity) => ({
+    activity,
+    minutes: calculateBurnTime(food.kcal, DEFAULT_WEIGHT_KG, activity.mets),
+  }))
+  .sort((a, b) => a.minutes - b.minutes)
+
+const fastest = activityRows[0]
+const slowest = activityRows[activityRows.length - 1]
+
+/** กินหลายหน่วย / สั่งพิเศษ แล้วเป็นเท่าไหร่ */
+const portionRows = PORTIONS.map((portion) => ({
+  portion,
+  kcal: computeFoodKcal(food, portion, []),
+}))
+
+const addons = getAddonsFor(food)
+const addonRows = addons.map((addon) => ({
+  addon,
+  kcal: computeFoodKcal(food, 1, [addon.slug]),
+}))
+
+/** เทียบเป็นสัดส่วนของพลังงานทั้งวัน */
+const percentOfDay = Math.round((food.kcal / THAI_RDI.male) * 100)
+const riceEquivalent = Math.round((food.kcal / 240) * 10) / 10
+
+const analysis = analyseFood(food)
+
+const related = POPULAR_FOODS.filter(
+  (f) => f.category === food.category && f.slug !== food.slug,
+).slice(0, 6)
+
+const title = `${food.name} กี่แคลอรี่? ${food.kcal.toLocaleString()} kcal ต้องออกกำลังกายกี่นาที`
+const description = `${food.name} (${food.serving}) ให้พลังงาน ${food.kcal.toLocaleString()} แคลอรี่ เทียบเท่าข้าวสวย ${riceEquivalent} จาน ดูว่าต้องวิ่ง ว่ายน้ำ หรือต่อยมวยกี่นาทีถึงจะเผาผลาญหมด คำนวณจากค่า METs จริง`
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `${food.name} อ้วนไหม?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `${food.name} จัดอยู่ในกลุ่มพลังงาน${analysis.bandLabel} เป็นอันดับ ${analysis.rankInCategory} จาก ${analysis.categorySize} เมนูในหมวด${FOOD_CATEGORY_LABEL[food.category]} และ${analysis.diffFromAverage >= 0 ? `สูงกว่า` : `ต่ำกว่า`}ค่าเฉลี่ยของหมวดอยู่ ${Math.abs(analysis.diffFromAverage)}% ${analysis.advice}`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `${food.name} กี่แคลอรี่?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `${food.name} ปริมาณ ${food.serving} ให้พลังงานประมาณ ${food.kcal.toLocaleString()} แคลอรี่ คิดเป็นราว ${percentOfDay}% ของพลังงานที่ผู้ชายไทยควรได้รับต่อวัน (${THAI_RDI.male.toLocaleString()} แคลอรี่) หรือเทียบเท่าข้าวสวย ${riceEquivalent} จาน`,
+        },
+      },
+      ...(fastest
+        ? [
+            {
+              '@type': 'Question',
+              name: `กิน${food.name}แล้วต้องออกกำลังกายกี่นาที?`,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: `สำหรับคนน้ำหนัก ${DEFAULT_WEIGHT_KG} กก. วิธีที่เร็วที่สุดคือ${fastest.activity.name_th} ใช้เวลาราว ${formatDuration(fastest.minutes)} ส่วนวิธีที่ช้าที่สุดอย่าง${slowest!.activity.name_th}ต้องใช้ถึง ${formatDuration(slowest!.minutes)}`,
+              },
+            },
+          ]
+        : []),
+      ...(addonRows.length > 0
+        ? [
+            {
+              '@type': 'Question',
+              name: `${food.name}สั่งพิเศษ เพิ่มกี่แคลอรี่?`,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: addonRows
+                  .map((row) => `${row.addon.label} รวมเป็น ${row.kcal.toLocaleString()} แคลอรี่`)
+                  .join(' · '),
+              },
+            },
+          ]
+        : []),
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'หน้าแรก',
+        item: new URL('/', Astro.site ?? 'http://localhost:4321').href,
+      },
+      { '@type': 'ListItem', position: 2, name: food.name },
+    ],
+  },
+]
+---
+
+<Layout
+  title={title}
+  description={description}
+  keywords={[
+    `${food.name} กี่แคล`,
+    `${food.name} แคลอรี่`,
+    `${food.name} กี่แคลอรี่`,
+    `กิน${food.name} ต้องวิ่งกี่นาที`,
+  ]}
+  jsonLd={jsonLd}
+  ogImage={`/og/food-${food.slug}.png`}
+>
+  <!-- ================= คำตอบทันที ================= -->
+  <section class="border-b-4 border-steel px-4 py-12 sm:py-16">
+    <div class="mx-auto max-w-3xl">
+      <nav aria-label="breadcrumb" class="mb-6 text-xs font-bold text-neutral-500">
+        <a href="/" class="hover:text-hazard">หน้าแรก</a>
+        <span class="mx-2">/</span>
+        <span class="text-neutral-300">{FOOD_CATEGORY_LABEL[food.category]}</span>
+      </nav>
+
+      <h1 class="font-display text-stencil text-3xl leading-tight font-black text-white sm:text-5xl">
+        {food.emoji} {food.name} กี่แคลอรี่?
+      </h1>
+
+      <div class="panel-brutal mt-8 border-hazard bg-concrete p-6 sm:p-8">
+        <p class="text-xs font-black tracking-widest text-hazard uppercase">
+          {food.serving}
+        </p>
+        <p class="font-display text-stencil my-1 text-6xl font-black text-hazard sm:text-7xl">
+          {food.kcal.toLocaleString()}
+          <span class="text-2xl text-neutral-500">kcal</span>
+        </p>
+        <p class="text-base text-neutral-300">
+          คิดเป็น <strong class="text-white">{percentOfDay}%</strong> ของพลังงานที่ควรได้รับทั้งวัน
+          · เทียบเท่าข้าวสวย <strong class="text-white">{riceEquivalent} จาน</strong>
+        </p>
+      </div>
+
+      {
+        fastest && (
+          <p class="mt-6 text-base leading-relaxed text-neutral-300">
+            ถ้าจะเผาผลาญให้หมด คนน้ำหนัก {DEFAULT_WEIGHT_KG} กก. ต้อง
+            <strong class="text-hazard">
+              {fastest.activity.name_th} {formatDuration(fastest.minutes)}
+            </strong>
+            ซึ่งเร็วที่สุดในบรรดากิจกรรมทั้งหมด หรือถ้าเลือกทางที่สบายที่สุดอย่าง
+            {slowest!.activity.name_th} จะต้องใช้เวลาถึง
+            <strong class="text-blood">{formatDuration(slowest!.minutes)}</strong>
+          </p>
+        )
+      }
+
+      <p class="mt-4 border-l-4 border-steel pl-4 text-sm leading-relaxed text-neutral-400">
+        {FOOD_CATEGORY_NOTE[food.category]}
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= ตัวเลขเฉพาะเมนูนี้ ================= -->
+  <section class="border-b-4 border-steel bg-concrete px-4 py-14">
+    <div class="mx-auto max-w-3xl">
+      <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
+        {food.kcal.toLocaleString()} แคลอรี่ มันเยอะแค่ไหน?
+      </h2>
+
+      <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {
+          analysis.insights.map((item) => (
+            <div class="border-2 border-steel bg-void px-4 py-3">
+              <dt class="text-[11px] font-black tracking-wide text-neutral-500 uppercase">
+                {item.label}
+              </dt>
+              <dd class="font-display text-lg font-black text-hazard">{item.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <div class="mt-6 border-l-4 border-hazard bg-void px-5 py-4">
+        <p class="font-display text-sm font-black text-hazard">
+          ระดับพลังงาน: {analysis.bandLabel} · อันดับ {analysis.rankInCategory} จาก{' '}
+          {analysis.categorySize} เมนูในหมวด{FOOD_CATEGORY_LABEL[food.category]}
+        </p>
+        <p class="mt-2 text-sm leading-relaxed text-neutral-300">{analysis.advice}</p>
+        <p class="mt-2 text-xs text-neutral-500">
+          ค่าเฉลี่ยของหมวดนี้อยู่ที่ {analysis.categoryAverage.toLocaleString()} แคลอรี่ —
+          {food.name}
+          {
+            analysis.diffFromAverage >= 0
+              ? ` สูงกว่าค่าเฉลี่ย ${analysis.diffFromAverage}%`
+              : ` ต่ำกว่าค่าเฉลี่ย ${Math.abs(analysis.diffFromAverage)}%`
+          }
+        </p>
+      </div>
+
+      <h3 class="mt-10 font-display text-lg font-black text-white">
+        เมนูที่ให้พลังงานพอๆ กัน
+      </h3>
+      <ul class="mt-3 grid gap-2 sm:grid-cols-2">
+        {
+          analysis.neighbours.map((item) => (
+            <li>
+              <a
+                href={`/food/${item.slug}`}
+                class="flex items-center justify-between gap-2 border-2 border-steel bg-void px-3 py-2 text-sm transition hover:border-hazard"
+              >
+                <span class="min-w-0 truncate text-neutral-300">
+                  {item.emoji} {item.name}
+                </span>
+                <span class="shrink-0 font-black text-neutral-500">
+                  {item.kcal.toLocaleString()}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= ตารางกิจกรรม ================= -->
+  <section class="px-4 py-14">
+    <div class="mx-auto max-w-3xl">
+      <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
+        กิน{food.name} ต้องทำอะไรกี่นาที
+      </h2>
+      <p class="mt-2 text-sm text-neutral-400">
+        คัดกิจกรรมที่เข้ากับเมนูหมวด{FOOD_CATEGORY_LABEL[food.category]} · คิดที่น้ำหนัก{' '}
+        {DEFAULT_WEIGHT_KG} กก. · เรียงจากเร็วไปช้า
+      </p>
+
+      <div class="mt-6 overflow-x-auto border-4 border-steel">
+        <table class="w-full min-w-[420px] text-left text-sm">
+          <caption class="sr-only">
+            ตารางเวลาที่ต้องใช้ในแต่ละกิจกรรมเพื่อเผาผลาญ{food.name}
+          </caption>
+          <thead class="bg-hazard text-void">
+            <tr>
+              <th scope="col" class="px-4 py-3 font-black">กิจกรรม</th>
+              <th scope="col" class="px-4 py-3 text-right font-black">METs</th>
+              <th scope="col" class="px-4 py-3 text-right font-black">ต้องใช้เวลา</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              activityRows.map(({ activity, minutes }) => (
+                <tr class="border-t-2 border-steel odd:bg-concrete">
+                  <th scope="row" class="px-4 py-3 text-left font-bold text-white">
+                    <a href={`/burn/${activity.slug}`} class="hover:text-hazard">
+                      {activity.emoji} {activity.name_th}
+                    </a>
+                  </th>
+                  <td class="px-4 py-3 text-right font-bold text-neutral-500">{activity.mets}</td>
+                  <td class="px-4 py-3 text-right font-black whitespace-nowrap text-blood">
+                    {formatDurationShort(minutes)}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ปริมาณ + สั่งพิเศษ ================= -->
+  <section class="border-y-4 border-steel bg-concrete px-4 py-14">
+    <div class="mx-auto max-w-3xl">
+      <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
+        กินหลายหน่วย / สั่ง<span class="text-hazard">พิเศษ</span> เป็นเท่าไหร่
+      </h2>
+
+      <div class="mt-6 grid gap-6 sm:grid-cols-2">
+        <div class="border-4 border-steel bg-void p-5">
+          <h3 class="font-display text-base font-black text-hazard">ตามจำนวนหน่วย</h3>
+          <dl class="mt-3 space-y-2 text-sm">
+            {
+              portionRows.map((row) => (
+                <div class="flex justify-between border-b border-steel pb-1">
+                  <dt class="text-neutral-400">
+                    ×{row.portion} ({food.serving})
+                  </dt>
+                  <dd class="font-black text-white">{row.kcal.toLocaleString()} kcal</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </div>
+
+        {
+          addonRows.length > 0 && (
+            <div class="border-4 border-blood bg-void p-5">
+              <h3 class="font-display text-base font-black text-blood">สั่งเพิ่มแล้วเป็น</h3>
+              <dl class="mt-3 space-y-2 text-sm">
+                {addonRows.map((row) => (
+                  <div class="flex justify-between border-b border-steel pb-1">
+                    <dt class="text-neutral-400">
+                      {row.addon.emoji} {row.addon.label}
+                    </dt>
+                    <dd class="font-black text-white">{row.kcal.toLocaleString()} kcal</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= เครื่องคำนวณ (เติมเมนูไว้ให้แล้ว) ================= -->
+  <section class="px-4 py-14">
+    <div class="mx-auto mb-8 max-w-2xl text-center">
+      <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
+        แล้ว<span class="text-hazard">ตัวคุณเอง</span>ล่ะ?
+      </h2>
+      <p class="mt-2 text-sm text-neutral-400">
+        ตัวเลขข้างบนคิดที่ {DEFAULT_WEIGHT_KG} กก. — กรอกข้อมูลจริงของคุณ
+        แล้วระบบจะบอกว่ามื้อนี้ยัง "นอนเฉยๆ ได้" หรือต้องลุกไปชดใช้
+      </p>
+      <p class="mt-3 inline-block border-2 border-hazard px-3 py-1.5 text-xs font-black text-hazard">
+        📢 {CTA_TAUNTS[0]}
+      </p>
+    </div>
+
+    <CalculatorFlow client:visible defaultFood={{ name: food.name, kcal: food.kcal }} />
+  </section>
+
+  <!-- ================= เมนูใกล้เคียง ================= -->
+  {
+    related.length > 0 && (
+      <section class="border-t-4 border-steel px-4 py-14">
+        <div class="mx-auto max-w-3xl">
+          <h2 class="font-display text-xl font-black text-white sm:text-2xl">
+            เมนูอื่นในหมวด{FOOD_CATEGORY_LABEL[food.category]}
+          </h2>
+          <ul class="mt-6 grid gap-3 sm:grid-cols-2">
+            {related.map((item) => (
+              <li>
+                <a
+                  href={`/food/${item.slug}`}
+                  class="flex items-center justify-between gap-2 border-2 border-steel bg-concrete px-4 py-3 transition hover:border-hazard hover:bg-void"
+                >
+                  <span class="min-w-0 truncate font-bold text-white">
+                    {item.emoji} {item.name}
+                  </span>
+                  <span class="shrink-0 text-xs font-black text-neutral-500">
+                    {item.kcal.toLocaleString()} kcal
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- ================= โฆษณาท้ายหน้า ================= -->
+  <div class="mx-auto max-w-3xl px-4 pb-14">
+    <AdPlaceholder client:visible adSlot={AD_SLOTS.foodFooter} format="auto" />
+  </div>
+</Layout>

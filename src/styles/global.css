@@ -1,0 +1,120 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   Design Tokens — โทน "ป้ายเตือนอันตราย": ดำ / เหลืองจราจร / แดงเลือด
+   Tailwind v4 อ่าน @theme แล้ว generate utility ให้อัตโนมัติ
+   เช่น bg-hazard, text-blood, border-warn
+   ========================================================================== */
+@theme {
+  --color-hazard: #facc15; /* เหลืองป้ายเตือน */
+  --color-hazard-dark: #ca8a04;
+  --color-blood: #dc2626; /* แดงเลือด */
+  --color-blood-dark: #7f1d1d;
+  --color-void: #0a0a0a; /* ดำสนิท */
+  --color-concrete: #171717; /* ดำอมเทา (พื้นการ์ด) */
+  --color-steel: #262626; /* เส้นขอบ */
+
+  --font-display: 'Anuphan', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Anuphan', ui-sans-serif, system-ui, sans-serif;
+
+  --animate-shake: shake 0.4s ease-in-out;
+  --animate-siren: siren 1.4s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px) rotate(-1deg);
+  }
+  40% {
+    transform: translateX(8px) rotate(1deg);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes siren {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(220 38 38 / 0.7);
+  }
+  50% {
+    box-shadow: 0 0 32px 6px rgb(220 38 38 / 0.35);
+  }
+}
+
+/* ==========================================================================
+   Custom Utilities
+   ========================================================================== */
+
+/** แถบเตือนลายทแยงเหลือง-ดำ แบบป้ายก่อสร้าง */
+@utility hazard-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-hazard) 0 16px,
+    var(--color-void) 16px 32px
+  );
+}
+
+/** แถบเตือนลายทแยงแดง-ดำ (ใช้กับผลลัพธ์ระดับสาหัส) */
+@utility danger-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-blood) 0 16px,
+    var(--color-void) 16px 32px
+  );
+}
+
+/** ตัวอักษรมีเงาแข็งแบบสเตนซิลบนป้าย */
+@utility text-stencil {
+  text-shadow:
+    3px 3px 0 var(--color-void),
+    -1px -1px 0 var(--color-void);
+}
+
+/** กรอบหนาแบบป้ายเหล็ก */
+@utility panel-brutal {
+  border-width: 4px;
+  box-shadow: 8px 8px 0 0 var(--color-void);
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--color-void);
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-void);
+    color: #f5f5f5;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ซ่อนลูกศร spinner ของ input[type=number] ให้ดูสะอาด */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  ::selection {
+    background-color: var(--color-hazard);
+    color: var(--color-void);
+  }
+}

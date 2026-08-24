@@ -1,0 +1,92 @@
+---
+import Layout from '../layouts/Layout.astro'
+import RankBoard from '../components/RankBoard.tsx'
+import { RANK_TIERS, SHAME_TIERS } from '../lib/ranks'
+import { formatDurationShort } from '../lib/calculator'
+
+const title = 'จัดอันดับ + ระบบยศ | ลดน้ำหนักไม่มีคำว่าปลอบใจ'
+const description =
+  'สะสมนาทีที่ออกกำลังกายจริงเพื่อไต่ยศ จากตู้กับข้าวเคลื่อนที่ไปจนถึงตำนานผู้ไม่ปลอบใจใคร — แต่ถ้าเบี้ยวหนี้แคลอรี่ ชื่อคุณจะไปโผล่บนบอร์ดประจาน'
+---
+
+<Layout
+  title={title}
+  description={description}
+  keywords={['ระบบยศ ออกกำลังกาย', 'จัดอันดับ ลดน้ำหนัก', 'leaderboard ออกกำลังกาย', 'ท้าลดน้ำหนัก']}
+  ogImage="/og/rank.png"
+>
+  <section class="border-b-4 border-steel px-4 py-12 sm:py-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="mb-4 inline-block border-2 border-hazard px-3 py-1 text-xs font-black tracking-widest text-hazard uppercase">
+        🏆 สนามประลอง
+      </p>
+      <h1 class="font-display text-stencil text-3xl leading-tight font-black text-white sm:text-5xl">
+        ยศไม่ได้มาจากคำพูด<br />
+        <span class="text-hazard">มาจากนาทีที่เหนื่อยจริง</span>
+      </h1>
+      <p class="mx-auto mt-5 max-w-xl text-base text-neutral-400">
+        บันทึกหนี้แคลอรี่ → ไปออกกำลังกาย → กดชดใช้ → ได้ยศ
+        <br class="hidden sm:block" />
+        เบี้ยวเมื่อไหร่ ชื่อขึ้นบอร์ดประจานทันที
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-12">
+    <RankBoard client:load />
+  </section>
+
+  <!-- ---------- ตารางยศทั้งหมด (static content สำหรับ SEO) ---------- -->
+  <section class="border-t-4 border-steel bg-concrete px-4 py-14">
+    <div class="mx-auto max-w-3xl">
+      <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
+        ยศทั้งหมด {RANK_TIERS.length} ขั้น
+      </h2>
+      <p class="mt-2 text-sm text-neutral-400">
+        นับจากเวลาที่ออกกำลังกายจริงและกดชดใช้แล้วเท่านั้น — กดเล่นไม่ได้แต้ม
+      </p>
+
+      <ul class="mt-6 space-y-2">
+        {
+          RANK_TIERS.map((tier, index) => (
+            <li class="flex flex-wrap items-center gap-x-4 gap-y-1 border-2 border-steel bg-void px-4 py-3">
+              <span class="w-8 shrink-0 font-display text-sm font-black text-neutral-600">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span class={`font-display text-lg font-black ${tier.color}`}>
+                {tier.emoji} {tier.title}
+              </span>
+              <span class="ml-auto shrink-0 text-xs font-black text-neutral-500">
+                {tier.minMinutes === 0 ? 'เริ่มต้น' : `${formatDurationShort(tier.minMinutes)}+`}
+              </span>
+              <span class="w-full text-sm text-neutral-500">“{tier.taunt}”</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h2 class="mt-12 font-display text-2xl font-black text-white sm:text-3xl">
+        ยศ<span class="text-blood">ประจาน</span> {SHAME_TIERS.length} ขั้น
+      </h2>
+      <p class="mt-2 text-sm text-neutral-400">
+        นับจากหนี้ที่บันทึกไว้แล้วไม่เคยไปชดใช้
+      </p>
+
+      <ul class="mt-6 space-y-2">
+        {
+          SHAME_TIERS.map((tier) => (
+            <li class="flex flex-wrap items-center gap-x-4 gap-y-1 border-2 border-steel bg-void px-4 py-3">
+              <span class="font-display text-lg font-black text-red-300">
+                {tier.emoji} {tier.title}
+              </span>
+              <span class="ml-auto shrink-0 text-xs font-black text-neutral-500">
+                {tier.minMinutes === 0 ? 'สะอาด' : `ค้าง ${formatDurationShort(tier.minMinutes)}+`}
+              </span>
+              <span class="w-full text-sm text-neutral-500">“{tier.taunt}”</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</Layout>

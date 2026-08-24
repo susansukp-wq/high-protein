@@ -1,0 +1,231 @@
+---
+import Layout from '../layouts/Layout.astro'
+import CalculatorFlow from '../components/CalculatorFlow.tsx'
+import { getActivities } from '../lib/supabase'
+import { ACTIVITY_GROUP_LABEL, ACTIVITY_GROUP_ORDER } from '../lib/types'
+import { SEO_TABLE_FOODS } from '../data/popular-foods'
+import { calculateBurnTime, formatDurationShort, DEFAULT_WEIGHT_KG } from '../lib/calculator'
+
+// ดึงตอน build → ส่งให้ island ใช้ทันที ไม่ต้องรอ fetch ฝั่ง client
+const { data: activities, error: activitiesError } = await getActivities()
+
+if (activitiesError) {
+  console.warn(`\n⚠️  [index.astro] ${activitiesError}\n   → รัน \`npm run doctor\` เพื่อตรวจสอบการเชื่อมต่อ\n`)
+}
+
+const grouped = ACTIVITY_GROUP_ORDER.map((group) => ({
+  label: ACTIVITY_GROUP_LABEL[group],
+  items: activities.filter((a) => a.group_key === group),
+})).filter((g) => g.items.length > 0)
+
+const title = 'ลดน้ำหนักไม่มีคำว่าปลอบใจ | คำนวณว่ากินแล้วต้องออกกำลังกายกี่นาที'
+const description =
+  'กินไป 1,800 แคล ต้องวิ่งกี่นาที? คำนวณเวลาออกกำลังกายจากค่า METs ตามน้ำหนักตัวจริงของคุณ พร้อมคำจิกกัดที่จะทำให้คุณลุกจากโซฟาเดี๋ยวนี้'
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'ลดน้ำหนักไม่มีคำว่าปลอบใจ',
+    applicationCategory: 'HealthApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'th-TH',
+    description,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'THB' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'คำนวณแคลอรี่ที่ต้องเผาผลาญยังไง?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'ใช้สูตร METs มาตรฐาน: นาทีที่ต้องออกกำลังกาย = (แคลอรี่ × 200) ÷ (METs × 3.5 × น้ำหนักตัวเป็นกิโลกรัม) ยิ่งน้ำหนักตัวมาก ยิ่งเผาผลาญได้เร็วต่อนาที',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'METs คืออะไร?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'METs (Metabolic Equivalent of Task) คือหน่วยวัดความหนักของกิจกรรม โดยเทียบกับการนั่งเฉยๆ ที่เท่ากับ 1 METs เช่น วิ่งอยู่ที่ 9.8 METs แปลว่าเผาผลาญมากกว่านั่งเฉยๆ เกือบ 10 เท่า',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'กินหมูกระทะ 1 มื้อ ต้องออกกำลังกายนานแค่ไหน?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'หมูกระทะบุฟเฟต์ 1 มื้อประมาณ 1,800 แคลอรี่ คนน้ำหนัก 70 กก. ต้องวิ่งต่อเนื่องประมาณ 2 ชั่วโมง 30 นาที หรือเดินห้างเกือบ 8 ชั่วโมง จึงจะเผาผลาญหมด',
+        },
+      },
+    ],
+  },
+]
+
+// ตัวอย่างคำนวณสำหรับ Googlebot — วิ่ง (METs 9.8) ที่น้ำหนัก 70 กก.
+const RUNNING_METS = 9.8
+const sampleRows = SEO_TABLE_FOODS.slice(0, 6)
+---
+
+<Layout title={title} description={description} keywords={['คำนวณแคลอรี่', 'กินแล้วต้องวิ่งกี่นาที', 'เบิร์นแคลอรี่', 'METs', 'ลดน้ำหนัก', 'คำนวณการเผาผลาญ']} jsonLd={jsonLd} ogImage="/og/home.png">
+  <!-- ================= HERO ================= -->
+  <section class="relative overflow-hidden border-b-4 border-steel px-4 py-16 sm:py-24">
+    <div class="mx-auto max-w-3xl text-center">
+      <p
+        class="mb-5 inline-block border-2 border-blood bg-blood/10 px-4 py-1.5 text-xs font-black tracking-widest text-blood uppercase"
+      >
+        ⚠️ เขตห้ามปลอบใจ
+      </p>
+
+      <h1 class="font-display text-stencil text-4xl leading-[1.05] font-black text-white sm:text-6xl">
+        กินไปเท่าไหร่<br />
+        <span class="text-hazard">ก็ต้องชดใช้เท่านั้น</span>
+      </h1>
+
+      <p class="mx-auto mt-6 max-w-xl text-base text-neutral-400 sm:text-lg">
+        บอกมาว่ากินอะไรไป แล้วเราจะบอกว่าต้องออกกำลังกาย<strong class="text-white">กี่นาที</strong>
+        ถึงจะหมดหนี้ — คำนวณจากค่า METs ตามน้ำหนักตัวจริง
+        แถมคำด่าฟรีไม่คิดเงิน
+      </p>
+
+      <div class="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-bold text-neutral-500">
+        <span>✅ ไม่ต้องสมัครสมาชิก</span>
+        <span>✅ ฟรี 100%</span>
+        <span>❌ ไม่มีคำว่า "ไม่เป็นไรนะ"</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CALCULATOR (React Island) ================= -->
+  <section class="px-4 py-14">
+    <CalculatorFlow client:load initialActivities={activities} initialError={activitiesError} />
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="border-y-4 border-steel bg-concrete px-4 py-14">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="mb-10 text-center font-display text-2xl font-black text-white sm:text-3xl">
+        ระบบทำงานยังไง
+      </h2>
+      <ol class="grid gap-6 sm:grid-cols-3">
+        {
+          [
+            { n: '01', t: 'สารภาพ', d: 'บอกชื่ออาหารกับจำนวนแคลอรี่ที่ยัดเข้าไป ห้ามโกหก' },
+            { n: '02', t: 'เลือกโทษ', d: 'ใส่น้ำหนักตัวจริง แล้วเลือกกิจกรรมที่จะใช้ไถ่บาป' },
+            { n: '03', t: 'รับกรรม', d: 'ระบบคำนวณเวลาที่ต้องออกกำลังกาย พร้อมคำด่าตัวใหญ่ๆ' },
+          ].map((s) => (
+            <li class="border-4 border-steel bg-void p-6">
+              <span class="font-display text-3xl font-black text-hazard">{s.n}</span>
+              <h3 class="mt-2 font-display text-lg font-black text-white">{s.t}</h3>
+              <p class="mt-1 text-sm text-neutral-400">{s.d}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= SEO TABLE ================= -->
+  <section class="px-4 py-14">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
+        อาหารยอดฮิต ต้อง<span class="text-hazard">วิ่ง</span>กี่นาที?
+      </h2>
+      <p class="mt-2 text-sm text-neutral-400">
+        ตัวอย่างคำนวณที่น้ำหนัก {DEFAULT_WEIGHT_KG} กก. · วิ่ง (METs {RUNNING_METS})
+      </p>
+
+      <div class="mt-6 overflow-x-auto border-4 border-steel">
+        <table class="w-full min-w-[480px] text-left text-sm">
+          <thead class="bg-hazard text-void">
+            <tr>
+              <th scope="col" class="px-4 py-3 font-black">อาหาร</th>
+              <th scope="col" class="px-4 py-3 font-black">หน่วย</th>
+              <th scope="col" class="px-4 py-3 text-right font-black">แคลอรี่</th>
+              <th scope="col" class="px-4 py-3 text-right font-black">ต้องวิ่ง</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              sampleRows.map((food) => (
+                <tr class="border-t-2 border-steel odd:bg-concrete">
+                  <td class="px-4 py-3 font-bold text-white">
+                    {food.emoji} {food.name}
+                  </td>
+                  <td class="px-4 py-3 text-neutral-500">{food.serving}</td>
+                  <td class="px-4 py-3 text-right font-bold text-neutral-300">
+                    {food.kcal.toLocaleString()}
+                  </td>
+                  <td class="px-4 py-3 text-right font-black text-blood">
+                    {formatDurationShort(calculateBurnTime(food.kcal, DEFAULT_WEIGHT_KG, RUNNING_METS))}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ACTIVITY DIRECTORY (Internal linking) ================= -->
+  {
+    activitiesError && (
+      <section class="px-4 py-10">
+        <div class="mx-auto max-w-2xl border-4 border-blood bg-blood/10 p-5">
+          <p class="font-display text-base font-black text-red-300">
+            ⚠️ ยังเชื่อมต่อฐานข้อมูลไม่ได้
+          </p>
+          <p class="mt-2 text-sm leading-relaxed text-neutral-300">{activitiesError}</p>
+          <p class="mt-3 text-xs text-neutral-500">
+            รัน <code class="bg-void px-1.5 py-0.5 font-mono text-hazard">npm run doctor</code>{' '}
+            ในเทอร์มินัลเพื่อดูว่าติดตรงไหน
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="border-t-4 border-steel px-4 py-14" style={activities.length === 0 ? 'display:none' : ''}>
+    <div class="mx-auto max-w-5xl">
+      <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
+        เลือกวิธีชดใช้ทั้งหมด {activities.length} แบบ
+      </h2>
+      <p class="mt-2 text-sm text-neutral-400">
+        กดเข้าไปดูตารางคำนวณละเอียดของแต่ละกิจกรรม
+      </p>
+
+      <div class="mt-8 space-y-8">
+        {
+          grouped.map(({ label, items }) => (
+            <div>
+              <h3 class="mb-3 border-l-4 border-hazard pl-3 font-display text-lg font-black text-hazard">
+                {label}
+              </h3>
+              <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {items.map((activity) => (
+                  <li>
+                    <a
+                      href={`/burn/${activity.slug}`}
+                      class="flex items-center justify-between gap-2 border-2 border-steel bg-concrete px-4 py-3 transition hover:border-hazard hover:bg-void"
+                    >
+                      <span class="font-bold text-white">
+                        {activity.emoji} {activity.name_th}
+                      </span>
+                      <span class="shrink-0 text-xs font-black text-neutral-500">
+                        {activity.mets} METs
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Layout>

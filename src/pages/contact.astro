@@ -1,0 +1,89 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { SITE, isContactConfigured } from '../config/site'
+
+if (!isContactConfigured) {
+  console.warn(
+    '\n⚠️  [contact.astro] ยังไม่ได้ตั้งค่า contactEmail ใน src/config/site.ts\n' +
+      '   Google ตรวจหน้านี้ตอนพิจารณา AdSense — ถ้ายังเป็นค่าตัวอย่างจะไม่ผ่าน\n',
+  )
+}
+
+const topics = [
+  {
+    emoji: '🐛',
+    title: 'เจอบั๊ก / ตัวเลขผิด',
+    detail:
+      'ถ้าเจอเมนูที่แคลอรี่ไม่ตรงความจริง หรือคำนวณแล้วได้ตัวเลขแปลกๆ บอกมาได้เลย ระบุชื่อเมนูและตัวเลขที่คิดว่าถูกต้องมาด้วยจะดีมาก',
+  },
+  {
+    emoji: '🍜',
+    title: 'อยากให้เพิ่มเมนู / กิจกรรม',
+    detail:
+      'ตอนนี้มีเมนูอาหาร 184 รายการ และกิจกรรม 21 อย่าง ถ้ามีอะไรที่คนไทยกินหรือเล่นกันแต่ยังไม่มีในระบบ ส่งชื่อมาได้',
+  },
+  {
+    emoji: '🔒',
+    title: 'ขอลบข้อมูลส่วนตัว (PDPA)',
+    detail:
+      'แจ้งชื่อเล่นที่ใช้บนบอร์ดจัดอันดับมา เราจะลบข้อมูลออกจากฐานข้อมูลถาวรภายใน 30 วัน',
+  },
+  {
+    emoji: '🤝',
+    title: 'ร่วมงาน / ลงโฆษณา',
+    detail:
+      'สนใจเป็นสปอนเซอร์ หรืออยากให้แนะนำสินค้าสายฟิตเนส คุยกันได้ แต่ขอสงวนสิทธิ์ปฏิเสธสินค้าลดน้ำหนักที่อ้างสรรพคุณเกินจริง',
+  },
+]
+---
+
+<Layout
+  title="ติดต่อเรา | ลดน้ำหนักไม่มีคำว่าปลอบใจ"
+  description="ติดต่อทีมงาน แจ้งบั๊ก เสนอเมนูใหม่ ขอลบข้อมูลส่วนตัว หรือคุยเรื่องร่วมงาน"
+>
+  <section class="px-4 py-12 sm:py-16">
+    <div class="mx-auto max-w-3xl">
+      <h1 class="font-display text-3xl font-black text-white sm:text-4xl">ติดต่อเรา</h1>
+      <p class="mt-3 text-base text-neutral-400">
+        เว็บนี้ด่าคุณได้ แต่รับฟังคุณเหมือนกัน — เรื่องไหนก็ทักมาได้
+      </p>
+
+      <div class="panel-brutal mt-8 border-hazard bg-concrete p-6 sm:p-8">
+        <p class="text-xs font-black tracking-widest text-hazard uppercase">อีเมล</p>
+        <a
+          href={`mailto:${SITE.contactEmail}`}
+          class="font-display text-2xl font-black break-all text-white underline underline-offset-4 hover:text-hazard sm:text-3xl"
+        >
+          {SITE.contactEmail}
+        </a>
+        <p class="mt-3 text-sm text-neutral-400">
+          ปกติตอบภายใน 3–5 วันทำการ ถ้าเป็นเรื่องขอลบข้อมูลจะจัดการให้ก่อน
+        </p>
+      </div>
+
+      <h2 class="mt-12 font-display text-xl font-black text-white sm:text-2xl">
+        เรื่องที่ติดต่อเข้ามาได้
+      </h2>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2">
+        {
+          topics.map((topic) => (
+            <div class="border-4 border-steel bg-concrete p-5">
+              <h3 class="font-display text-base font-black text-hazard">
+                {topic.emoji} {topic.title}
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed text-neutral-300">{topic.detail}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-10 border-l-4 border-blood bg-blood/10 px-5 py-4">
+        <p class="font-display text-sm font-black text-red-300">⚠️ สิ่งที่เราตอบไม่ได้</p>
+        <p class="mt-1 text-sm text-neutral-300">
+          เราไม่ใช่แพทย์และไม่ใช่นักกำหนดอาหาร จึงให้คำปรึกษาเรื่องโรคประจำตัว ยา
+          หรือการวางแผนโภชนาการเฉพาะบุคคลไม่ได้ กรุณาปรึกษาผู้เชี่ยวชาญโดยตรง
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>

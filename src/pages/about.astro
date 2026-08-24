@@ -1,0 +1,126 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { POPULAR_FOODS } from '../data/popular-foods'
+import { getActivities } from '../lib/supabase'
+import { ACTIVITY_FACTOR } from '../lib/health'
+
+/**
+ * หน้า About — มีผลกับ SEO มากกว่าที่คิด
+ *
+ * Google ให้น้ำหนักกับสัญญาณ E-E-A-T (ประสบการณ์ ความเชี่ยวชาญ ความน่าเชื่อถือ)
+ * โดยเฉพาะกับเว็บหมวดสุขภาพซึ่งถูกจัดเป็น YMYL (Your Money or Your Life)
+ * การอธิบายว่าตัวเลขมาจากไหนและคำนวณอย่างไร คือสิ่งที่แยกเว็บที่น่าเชื่อถือออกจากเว็บทั่วไป
+ */
+const { data: activities } = await getActivities()
+---
+
+<Layout
+  title="เกี่ยวกับเรา | ตัวเลขบนเว็บนี้มาจากไหน"
+  description="อธิบายที่มาของค่า METs สูตรคำนวณ BMR/TDEE และวิธีที่เราประเมินแคลอรี่ของอาหารไทย 184 เมนู พร้อมข้อจำกัดที่ควรรู้"
+  keywords={['METs คืออะไร', 'สูตรคำนวณ BMR', 'Mifflin-St Jeor', 'คำนวณแคลอรี่ อาหารไทย']}
+>
+  <section class="px-4 py-12 sm:py-16">
+    <div class="mx-auto max-w-3xl">
+      <h1 class="font-display text-3xl font-black text-white sm:text-4xl">
+        ตัวเลขบนเว็บนี้<span class="text-hazard">มาจากไหน</span>
+      </h1>
+
+      <p class="mt-6 text-base leading-relaxed text-neutral-300">
+        เว็บนับแคลอรี่ส่วนใหญ่บอกแค่ตัวเลข แต่ไม่เคยบอกว่ามันมาจากไหน
+        หน้านี้อธิบายทุกสูตรที่เราใช้ เพื่อให้คุณตรวจสอบได้เองว่าเชื่อถือได้แค่ไหน
+      </p>
+
+      <h2 class="mt-12 font-display text-xl font-black text-hazard sm:text-2xl">
+        1. ค่า METs — ความหนักของกิจกรรม
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-neutral-300">
+        METs (Metabolic Equivalent of Task) คือหน่วยวัดความหนักของกิจกรรม โดยเทียบกับการนั่งเฉยๆ
+        ที่เท่ากับ 1 METs กิจกรรมทั้ง {activities.length} อย่างบนเว็บนี้ใช้ค่าอ้างอิงจาก
+        <strong class="text-white">Compendium of Physical Activities</strong>
+        ซึ่งเป็นฐานข้อมูลมาตรฐานที่นักวิจัยด้านวิทยาศาสตร์การกีฬาใช้กันทั่วโลก
+      </p>
+      <div class="mt-4 overflow-x-auto border-2 border-steel">
+        <table class="w-full min-w-[360px] text-left text-sm">
+          <tbody>
+            <tr class="border-b border-steel bg-concrete">
+              <td class="px-4 py-2 text-neutral-400">นอนเฉยๆ / ไถมือถือ</td>
+              <td class="px-4 py-2 text-right font-black text-white">1.0 METs</td>
+            </tr>
+            <tr class="border-b border-steel">
+              <td class="px-4 py-2 text-neutral-400">เดินช้อปปิ้ง</td>
+              <td class="px-4 py-2 text-right font-black text-white">2.5 METs</td>
+            </tr>
+            <tr class="border-b border-steel bg-concrete">
+              <td class="px-4 py-2 text-neutral-400">วิ่ง (เพซ ~7 นาที/กม.)</td>
+              <td class="px-4 py-2 text-right font-black text-white">9.8 METs</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2 text-neutral-400">มวยไทย / ฟุตบอล</td>
+              <td class="px-4 py-2 text-right font-black text-white">10.0 METs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="mt-12 font-display text-xl font-black text-hazard sm:text-2xl">
+        2. สูตรหาเวลาที่ต้องออกกำลังกาย
+      </h2>
+      <pre class="mt-3 overflow-x-auto border-4 border-steel bg-void p-4 text-sm text-hazard"><code>แคลอรี่ที่เผาผลาญ = METs × 3.5 × น้ำหนัก(กก.) ÷ 200 × นาที
+
+กลับด้านเพื่อหาเวลา:
+นาที = (แคลอรี่ × 200) ÷ (METs × 3.5 × น้ำหนัก)</code></pre>
+      <p class="mt-3 text-sm leading-relaxed text-neutral-400">
+        นี่คือเหตุผลที่คนตัวหนักกว่าเบิร์นได้มากกว่าต่อนาทีที่ความหนักเท่ากัน
+        น้ำหนักตัวอยู่ในสูตรโดยตรง
+      </p>
+
+      <h2 class="mt-12 font-display text-xl font-black text-hazard sm:text-2xl">
+        3. โควต้าแคลอรี่ต่อวันของคุณ
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-neutral-300">
+        เราใช้สูตร <strong class="text-white">Mifflin-St Jeor</strong>
+        ซึ่งงานวิจัยพบว่าแม่นกว่าสูตร Harris-Benedict ที่เก่ากว่า สำหรับคนทั่วไป
+      </p>
+      <pre class="mt-3 overflow-x-auto border-4 border-steel bg-void p-4 text-sm text-hazard"><code>ชาย:  BMR = 10×น้ำหนัก + 6.25×ส่วนสูง − 5×อายุ + 5
+หญิง: BMR = 10×น้ำหนัก + 6.25×ส่วนสูง − 5×อายุ − 161
+
+พลังงานที่ใช้ต่อวัน = BMR × {ACTIVITY_FACTOR}
+โควต้าต่อมื้อ = พลังงานต่อวัน ÷ 3</code></pre>
+      <p class="mt-3 text-sm leading-relaxed text-neutral-400">
+        ตัวคูณ {ACTIVITY_FACTOR} คือระดับ "เคลื่อนไหวเบา"
+        ซึ่งตรงกับคนส่วนใหญ่ที่นั่งทำงานแล้วออกกำลังกายบ้าง
+        เราไม่ถามระดับกิจกรรมเพิ่มเพื่อไม่ให้ฟอร์มยาวจนคนเลิกกรอกกลางคัน
+      </p>
+
+      <h2 class="mt-12 font-display text-xl font-black text-hazard sm:text-2xl">
+        4. แคลอรี่ของอาหาร {POPULAR_FOODS.length} เมนู
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-neutral-300">
+        ตัวเลขแคลอรี่ของอาหารไทยเป็นค่าประมาณต่อหนึ่งหน่วยเสิร์ฟตามร้านทั่วไป
+        ซึ่งต่างจากอาหารบรรจุซองที่มีฉลากโภชนาการชัดเจน
+        อาหารจานเดียวร้านหนึ่งกับอีกร้านหนึ่งอาจต่างกันได้ถึง 30%
+        ขึ้นกับปริมาณน้ำมันและขนาดจาน
+      </p>
+      <p class="mt-3 text-sm leading-relaxed text-neutral-300">
+        เราจึงใส่ตัวเลือก "สั่งพิเศษ" และตัวคูณจำนวนหน่วยไว้ให้ปรับ
+        และเปิดให้แก้ตัวเลขทับได้เสมอถ้าคุณรู้ค่าที่แม่นกว่า
+      </p>
+
+      <div class="mt-12 border-4 border-blood bg-blood/10 p-6">
+        <h2 class="font-display text-lg font-black text-red-300">ข้อจำกัดที่เราไม่ปิดบัง</h2>
+        <ul class="mt-3 space-y-2 text-sm leading-relaxed text-neutral-300">
+          <li>▸ ค่า METs เป็นค่าเฉลี่ยของประชากร ไม่ใช่ค่าเฉพาะตัวคุณ คนสองคนทำกิจกรรมเดียวกันเบิร์นไม่เท่ากัน</li>
+          <li>▸ สูตร BMR มีความคลาดเคลื่อนราว 10% แม้ในคนปกติ และคลาดเคลื่อนมากขึ้นในคนที่มีมวลกล้ามเนื้อสูงหรือต่ำผิดปกติ</li>
+          <li>▸ เว็บนี้ไม่ได้คำนึงถึงคุณภาพของสารอาหาร กินโดนัท 500 แคลกับกินอกไก่ 500 แคล ระบบมองเท่ากัน แต่ร่างกายคุณไม่ได้มองแบบนั้น</li>
+          <li>▸ เนื้อหาทั้งหมดมีไว้เพื่อความบันเทิงและสร้างแรงจูงใจ <strong class="text-white">ไม่ใช่คำแนะนำทางการแพทย์</strong></li>
+        </ul>
+      </div>
+
+      <p class="mt-10 text-sm text-neutral-400">
+        มีข้อมูลที่คิดว่าเราคำนวณผิด?
+        <a href="/contact" class="font-bold text-hazard underline underline-offset-2">บอกเราได้เลย</a>
+        — เราแก้ให้ทุกครั้งที่มีคนทักมาพร้อมแหล่งอ้างอิง
+      </p>
+    </div>
+  </section>
+</Layout>

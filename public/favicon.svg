@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ลดน้ำหนักไม่มีคำว่าปลอบใจ">
+  <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
+  <path d="M32 5C32 15 45 19 45 32c0 10.5-5.8 18-13 18s-13-7.5-13-18C19 21 28 17 32 5Z" fill="#facc15"/>
+  <path d="M32 25c0 6 6.5 8 6.5 14.5C38.5 44.8 35.6 48 32 48s-6.5-3.2-6.5-8.5C25.5 33 32 31 32 25Z" fill="#dc2626"/>
+</svg>
