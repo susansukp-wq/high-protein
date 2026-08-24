@@ -126,10 +126,82 @@ export interface FoodAddon {
   keywords?: string[]
   /** คำอธิบายสั้นๆ บน UI */
   hint: string
+  /**
+   * ตัวเลือกที่เลือกได้ทีละอย่างในกลุ่มเดียวกัน
+   * เช่นชนิดเส้น — เลือกเส้นใหญ่แล้วต้องยกเลิกวุ้นเส้นอัตโนมัติ
+   * ถ้าไม่กำหนดกลุ่ม จะติ๊กพร้อมกันได้อิสระ
+   */
+  exclusiveGroup?: string
   appliesTo: FoodCategory[]
 }
 
+/** ป้ายหัวข้อของกลุ่มตัวเลือกที่เลือกได้ทีละอย่าง */
+export const ADDON_GROUP_LABEL: Record<string, string> = {
+  'noodle-type': 'เปลี่ยนชนิดเส้น',
+}
+
 export const FOOD_ADDONS: FoodAddon[] = [
+  /* ---- ชนิดเส้น: ทุกเมนูคิดจากเส้นเล็กเป็นค่าตั้งต้น ---- */
+  {
+    slug: 'noodle_yai',
+    label: 'เส้นใหญ่',
+    emoji: '🍜',
+    kcal: 40,
+    keywords: ['เส้นใหญ่'],
+    hint: '+40 kcal',
+    exclusiveGroup: 'noodle-type',
+    appliesTo: ['noodle'],
+  },
+  {
+    slug: 'noodle_mee',
+    label: 'เส้นหมี่',
+    emoji: '🍜',
+    kcal: -10,
+    keywords: ['เส้นหมี่', 'หมี่ขาว'],
+    hint: '−10 kcal',
+    exclusiveGroup: 'noodle-type',
+    appliesTo: ['noodle'],
+  },
+  {
+    slug: 'noodle_bamee',
+    label: 'บะหมี่',
+    emoji: '🍜',
+    kcal: 60,
+    keywords: ['บะหมี่', 'เส้นบะหมี่'],
+    hint: '+60 kcal (เส้นไข่)',
+    exclusiveGroup: 'noodle-type',
+    appliesTo: ['noodle'],
+  },
+  {
+    slug: 'noodle_woonsen',
+    label: 'วุ้นเส้น',
+    emoji: '🍥',
+    kcal: -50,
+    keywords: ['วุ้นเส้น'],
+    hint: '−50 kcal',
+    exclusiveGroup: 'noodle-type',
+    appliesTo: ['noodle'],
+  },
+  {
+    slug: 'noodle_none',
+    label: 'ไม่เอาเส้น (เกาเหลา)',
+    emoji: '🥣',
+    kcal: -150,
+    keywords: ['เกาเหลา', 'ไม่เอาเส้น', 'ไม่ใส่เส้น'],
+    hint: '−150 kcal',
+    exclusiveGroup: 'noodle-type',
+    appliesTo: ['noodle'],
+  },
+  {
+    slug: 'noodle_extra',
+    label: 'เพิ่มเส้น',
+    emoji: '➕',
+    kcal: 150,
+    keywords: ['เพิ่มเส้น', 'เส้นเพิ่ม'],
+    hint: '+150 kcal',
+    appliesTo: ['noodle'],
+  },
+
   {
     slug: 'special',
     label: 'พิเศษ',
@@ -281,6 +353,49 @@ export const POPULAR_FOODS: FoodItem[] = [
   { slug: 'carbonara', name: 'สปาเกตตี้คาโบนาร่า', kcal: 800, serving: '1 จาน', emoji: '🍝', category: 'noodle', aliases: ['คาโบนาร่า', 'พาสต้า', 'สปาเกตตี้'] },
   { slug: 'ramen', name: 'ราเมนทงคตสึ', kcal: 700, serving: '1 ชาม', emoji: '🍜', category: 'asian', aliases: ['ราเมง', 'ramen'] },
   { slug: 'udon', name: 'อุด้ง', kcal: 450, serving: '1 ชาม', emoji: '🍜', category: 'asian' },
+
+  /* ---------------- 🍜 ก๋วยเตี๋ยว: สายตุ๋น ---------------- */
+  { slug: 'kuay-teow-nuea-tun', name: 'ก๋วยเตี๋ยวเนื้อตุ๋น', kcal: 420, serving: '1 ชาม', emoji: '🍜', category: 'noodle', aliases: ['เนื้อตุ๋น', 'ก๋วยเตี๋ยวเนื้อ', 'เนื้อเปื่อย'] },
+  { slug: 'kuay-teow-moo-tun', name: 'ก๋วยเตี๋ยวหมูตุ๋น', kcal: 400, serving: '1 ชาม', emoji: '🍜', category: 'noodle', aliases: ['หมูตุ๋น'] },
+  { slug: 'kuay-teow-kai-tun', name: 'ก๋วยเตี๋ยวไก่ตุ๋น', kcal: 380, serving: '1 ชาม', emoji: '🍜', category: 'noodle', aliases: ['ไก่ตุ๋น', 'ก๋วยเตี๋ยวไก่'] },
+  { slug: 'kuay-teow-ped', name: 'ก๋วยเตี๋ยวเป็ดพะโล้', kcal: 480, serving: '1 ชาม', emoji: '🦆', category: 'noodle', aliases: ['ก๋วยเตี๋ยวเป็ด', 'เป็ดตุ๋น', 'เป็ดพะโล้'] },
+
+  /* ---------------- 🍜 ก๋วยเตี๋ยว: เนื้อสด / ลูกชิ้น ---------------- */
+  { slug: 'kuay-teow-nuea-sod', name: 'ก๋วยเตี๋ยวเนื้อสด', kcal: 380, serving: '1 ชาม', emoji: '🥩', category: 'noodle', aliases: ['เนื้อสด'] },
+  { slug: 'kuay-teow-nam-tok', name: 'ก๋วยเตี๋ยวน้ำตก', kcal: 400, serving: '1 ชาม', emoji: '🍲', category: 'noodle', aliases: ['น้ำตกหมู', 'ก๋วยเตี๋ยวน้ำตกหมู'] },
+  { slug: 'kuay-teow-look-chin-pla', name: 'ก๋วยเตี๋ยวลูกชิ้นปลา', kcal: 330, serving: '1 ชาม', emoji: '🐟', category: 'noodle', aliases: ['ลูกชิ้นปลา'] },
+  { slug: 'kuay-teow-look-chin-nuea', name: 'ก๋วยเตี๋ยวลูกชิ้นเนื้อ', kcal: 360, serving: '1 ชาม', emoji: '🍡', category: 'noodle', aliases: ['ลูกชิ้นเนื้อ'] },
+  { slug: 'kuay-teow-pla', name: 'ก๋วยเตี๋ยวปลา', kcal: 340, serving: '1 ชาม', emoji: '🐟', category: 'noodle', aliases: ['ก๋วยเตี๋ยวปลาสด'] },
+  { slug: 'kuay-teow-kung', name: 'ก๋วยเตี๋ยวกุ้ง', kcal: 360, serving: '1 ชาม', emoji: '🍤', category: 'noodle' },
+  { slug: 'kuay-teow-moo-sap', name: 'ก๋วยเตี๋ยวหมูสับ', kcal: 350, serving: '1 ชาม', emoji: '🍜', category: 'noodle', aliases: ['หมูสับ'] },
+  { slug: 'kuay-teow-kai-chik', name: 'ก๋วยเตี๋ยวไก่ฉีก', kcal: 330, serving: '1 ชาม', emoji: '🍗', category: 'noodle', aliases: ['ไก่ฉีก'] },
+  { slug: 'kuay-teow-kai-mara', name: 'ก๋วยเตี๋ยวไก่มะระ', kcal: 320, serving: '1 ชาม', emoji: '🥒', category: 'noodle', aliases: ['ไก่มะระ', 'มะระยัดไส้'] },
+  { slug: 'kuay-teow-moo-manao', name: 'ก๋วยเตี๋ยวหมูมะนาว', kcal: 340, serving: '1 ชาม', emoji: '🍋', category: 'noodle', aliases: ['หมูมะนาว'] },
+
+  /* ---------------- 🍜 ก๋วยเตี๋ยว: น้ำข้น / รสจัด ---------------- */
+  { slug: 'kuay-teow-tom-yum-nam-khon', name: 'ก๋วยเตี๋ยวต้มยำน้ำข้น', kcal: 520, serving: '1 ชาม', emoji: '🌶️', category: 'noodle', aliases: ['ต้มยำน้ำข้น', 'ก๋วยเตี๋ยวต้มยำ'] },
+  { slug: 'yentafo-haeng', name: 'เย็นตาโฟแห้ง', kcal: 450, serving: '1 จาน', emoji: '🌸', category: 'noodle', aliases: ['เย็นตาโฟแห้ง'] },
+  { slug: 'kuay-jap-yuan', name: 'ก๋วยจั๊บญวน', kcal: 420, serving: '1 ชาม', emoji: '🍜', category: 'noodle', aliases: ['ก๋วยจั๊บญวน'] },
+  { slug: 'kao-lao', name: 'เกาเหลา (ไม่ใส่เส้น)', kcal: 200, serving: '1 ชาม', emoji: '🥣', category: 'noodle', aliases: ['เกาเหลา', 'ไม่เอาเส้น'] },
+
+  /* ---------------- 🍜 บะหมี่ ---------------- */
+  { slug: 'ba-mee-ped', name: 'บะหมี่เป็ด', kcal: 500, serving: '1 ชาม', emoji: '🦆', category: 'noodle', aliases: ['บะหมี่เป็ดย่าง'] },
+  { slug: 'ba-mee-tom-yum', name: 'บะหมี่ต้มยำ', kcal: 480, serving: '1 ชาม', emoji: '🌶️', category: 'noodle' },
+  { slug: 'ba-mee-moo-krob', name: 'บะหมี่หมูกรอบ', kcal: 550, serving: '1 ชาม', emoji: '🥓', category: 'noodle', aliases: ['บะหมี่หมูกรอบ'] },
+  { slug: 'ba-mee-haeng', name: 'บะหมี่แห้งเกี๊ยว', kcal: 480, serving: '1 จาน', emoji: '🥟', category: 'noodle', aliases: ['บะหมี่แห้ง'] },
+
+  /* ---------------- 🍜 เส้นผัด / เส้นทอด ---------------- */
+  { slug: 'kuay-teow-kua-kai', name: 'ก๋วยเตี๋ยวคั่วไก่', kcal: 600, serving: '1 จาน', emoji: '🍳', category: 'noodle', aliases: ['คั่วไก่'] },
+  { slug: 'mee-krob', name: 'หมี่กรอบ', kcal: 550, serving: '1 จาน', emoji: '🍜', category: 'noodle' },
+  { slug: 'rad-na-talay', name: 'ราดหน้าทะเล', kcal: 600, serving: '1 จาน', emoji: '🦐', category: 'noodle', aliases: ['ราดหน้าทะเล'] },
+  { slug: 'kuay-teow-lui-suan', name: 'ก๋วยเตี๋ยวลุยสวน', kcal: 220, serving: '5 ม้วน', emoji: '🥬', category: 'noodle', aliases: ['ลุยสวน'] },
+  { slug: 'kuay-teow-lord', name: 'ก๋วยเตี๋ยวหลอด', kcal: 380, serving: '1 จาน', emoji: '🥠', category: 'noodle' },
+
+  /* ---------------- 🍜 ขนมจีน / สุกี้ ---------------- */
+  { slug: 'kanom-jeen-nam-ngiao', name: 'ขนมจีนน้ำเงี้ยว', kcal: 400, serving: '1 จาน', emoji: '🍜', category: 'noodle', aliases: ['น้ำเงี้ยว'] },
+  { slug: 'kanom-jeen-green-curry', name: 'ขนมจีนแกงเขียวหวาน', kcal: 550, serving: '1 จาน', emoji: '🍛', category: 'noodle' },
+  { slug: 'kanom-jeen-sao-nam', name: 'ขนมจีนซาวน้ำ', kcal: 380, serving: '1 จาน', emoji: '🥥', category: 'noodle', aliases: ['ซาวน้ำ'] },
+  { slug: 'suki-nam', name: 'สุกี้น้ำ', kcal: 400, serving: '1 ชาม', emoji: '🍲', category: 'noodle' },
 
   /* ---------------- อีสาน / ส้มตำ ---------------- */
   { slug: 'som-tam', name: 'ส้มตำไทย', kcal: 180, serving: '1 จาน', emoji: '🥗', category: 'isan', aliases: ['ส้มตำ', 'ตำไทย', 'som tam'] },
@@ -635,13 +750,23 @@ export function detectAddonsFromText(text: string, food: FoodItem): string[] {
   const name = normalize(food.name)
   const allowed = getAddonsFor(food)
 
-  return allowed
-    .filter((addon) =>
-      (addon.keywords ?? []).some((kw) => {
-        const k = normalize(kw)
-        return q.includes(k) && !name.includes(k)
-      }),
-    )
+  const matched = allowed.filter((addon) =>
+    (addon.keywords ?? []).some((kw) => {
+      const k = normalize(kw)
+      return q.includes(k) && !name.includes(k)
+    }),
+  )
+
+  // ในกลุ่มที่เลือกได้ทีละอย่าง เก็บแค่ตัวแรกที่เจอ
+  // เผื่อผู้ใช้พิมพ์ "ก๋วยเตี๋ยวเส้นใหญ่วุ้นเส้น" ซึ่งสั่งจริงไม่ได้
+  const seenGroups = new Set<string>()
+  return matched
+    .filter((addon) => {
+      if (!addon.exclusiveGroup) return true
+      if (seenGroups.has(addon.exclusiveGroup)) return false
+      seenGroups.add(addon.exclusiveGroup)
+      return true
+    })
     .map((addon) => addon.slug)
 }
 

@@ -32,9 +32,16 @@ const siteName = 'ลดน้ำหนักไม่มีคำว่าป�
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/*
+      Google กำหนดว่า favicon ที่จะแสดงในผลค้นหาต้องเป็นจัตุรัส
+      ขนาด 48px หรือทวีคูณของ 48 เท่านั้น ไฟล์ 32px เดิมจึงถูกมองข้าม
+      ประกาศ 96px ไว้เป็นตัวหลัก และเรียงจากใหญ่ไปเล็กให้เบราว์เซอร์เลือกเอง
+    */}
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#0a0a0a" />
     <meta name="generator" content={Astro.generator} />
 

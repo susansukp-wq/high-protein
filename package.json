@@ -16,6 +16,7 @@
     "seed:fresh": "tsx scripts/seed.ts --fresh",
     "seed:check": "tsx scripts/seed.ts --dry-run",
     "typecheck": "astro check",
+    "icons": "tsx scripts/gen-icons.ts",
     "astro": "astro"
   },
   "dependencies": {

@@ -305,7 +305,21 @@ export default function CalculatorFlow({
   }
 
   function handleToggleAddon(slug: string) {
-    const next = addons.includes(slug) ? addons.filter((s) => s !== slug) : [...addons, slug]
+    let next: string[]
+
+    if (addons.includes(slug)) {
+      next = addons.filter((s) => s !== slug)
+    } else {
+      // ตัวเลือกในกลุ่มเดียวกันเลือกได้ทีละอย่าง เช่นชนิดเส้น
+      // เลือกเส้นใหญ่แล้ววุ้นเส้นต้องหลุดเอง ไม่งั้นจะบวกแคลอรี่ซ้อนกันแบบที่สั่งจริงไม่ได้
+      const group = availableAddons.find((a) => a.slug === slug)?.exclusiveGroup
+      const sameGroup = group
+        ? availableAddons.filter((a) => a.exclusiveGroup === group).map((a) => a.slug)
+        : []
+
+      next = [...addons.filter((s) => !sameGroup.includes(s)), slug]
+    }
+
     setAddons(next)
     if (baseFood) syncAutoKcal(baseFood, portion, next)
   }
