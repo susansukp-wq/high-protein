@@ -9,18 +9,15 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import {
-  createProfile,
-  getMyProfile,
-  logBurn,
-  toBodyProfile,
-  updateBodyProfile,
-} from '../lib/profile'
-import { getActivities, getRandomRoast } from '../lib/supabase'
+// profile.ts และ supabase.ts ลาก supabase-js มาด้วย (57 KB gzip)
+// จึงโหลดแบบ dynamic เฉพาะตอนที่ต้องใช้จริง ไม่ใช่ตอนเปิดหน้าเว็บ
+// ส่วน peekDeviceId กับ toBodyProfile เป็นฟังก์ชันเบาๆ import ตรงได้
+import { peekDeviceId } from '../lib/device'
 import { SEVERITY_LABEL, calculateBurnTime, formatDuration, getSeverityLevel } from '../lib/calculator'
 import {
   BMI_LABEL,
   GENDER_LABEL,
+  toBodyProfile,
   THAI_RDI,
   calculateBMI,
   calculateTDEE,
@@ -132,9 +129,17 @@ export default function CalculatorFlow({
   /* ========================== boot ========================== */
 
   useEffect(() => {
+    // ยังไม่มี device id = เข้าเว็บครั้งแรก ไม่มีโปรไฟล์ให้ดึงอยู่แล้ว
+    // ออกตรงนี้เลยเพื่อไม่ต้องโหลด supabase-js ในหน้าแรก
+    if (!peekDeviceId()) {
+      setIsBooting(false)
+      return
+    }
+
     let cancelled = false
 
-    getMyProfile()
+    import('../lib/profile')
+      .then(({ getMyProfile }) => getMyProfile())
       .then((me) => {
         if (cancelled) return
         if (me) {
@@ -165,6 +170,7 @@ export default function CalculatorFlow({
 
   async function loadActivities() {
     setIsLoadingActivities(true)
+    const { getActivities } = await import('../lib/supabase')
     const { data, error: loadError } = await getActivities()
     setActivities(data)
     setActivitiesError(loadError)
@@ -236,6 +242,8 @@ export default function CalculatorFlow({
       weightKg: Number(weight),
       age: Number(age),
     }
+
+    const { createProfile, updateBodyProfile } = await import('../lib/profile')
 
     // มีโปรไฟล์อยู่แล้ว = แก้ข้อมูล / ยังไม่มี = สมัครใหม่
     const { data, error: saveError } = profile
@@ -368,6 +376,7 @@ export default function CalculatorFlow({
     setActivitySlug(slug)
     if (!slug) return
     setIsRoasting(true)
+    const { getRandomRoast } = await import('../lib/supabase')
     setRoast(await getRandomRoast(slug))
     setIsRoasting(false)
   }
@@ -1363,6 +1372,7 @@ function SaveToBoard({
 
   async function handleSave() {
     setState('saving')
+    const { logBurn } = await import('../lib/profile')
     const { error } = await logBurn({
       profileId: profile.id,
       foodName,

@@ -12,60 +12,14 @@ import { supabase, supabaseConfigError, type Result } from './supabase'
 import type { BurnLog, LeaderboardRow, Profile } from './types'
 import type { BodyProfile, Gender } from './health'
 import { SHAME_THRESHOLD_MINUTES } from './ranks'
+import { getDeviceId, rememberProfileId } from './device'
 
-const DEVICE_KEY = 'nmd:device-id'
-const PROFILE_KEY = 'nmd:profile-id'
+// re-export ให้โค้ดเดิมที่ import จากไฟล์นี้ยังใช้ได้
+export { forgetProfile, getCachedProfileId, getDeviceId, peekDeviceId } from './device'
 
+/** คอลัมน์ที่ใช้แสดงบนบอร์ด — ไม่ดึง device_id กับข้อมูลร่างกายออกมาโดยไม่จำเป็น */
 const LEADERBOARD_COLUMNS =
   'id, nickname, total_paid_minutes, debt_minutes, current_streak, best_streak'
-
-/* ==========================================================================
- * DEVICE IDENTITY
- * ======================================================================== */
-
-/** อ่าน/สร้าง device id — คืน null ถ้า localStorage ใช้ไม่ได้ (โหมดส่วนตัว) */
-export function getDeviceId(): string | null {
-  try {
-    const existing = localStorage.getItem(DEVICE_KEY)
-    if (existing) return existing
-
-    const generated =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `dev-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
-
-    localStorage.setItem(DEVICE_KEY, generated)
-    return generated
-  } catch {
-    return null
-  }
-}
-
-function rememberProfileId(id: string): void {
-  try {
-    localStorage.setItem(PROFILE_KEY, id)
-  } catch {
-    /* ignore */
-  }
-}
-
-export function getCachedProfileId(): string | null {
-  try {
-    return localStorage.getItem(PROFILE_KEY)
-  } catch {
-    return null
-  }
-}
-
-/** ลืมตัวตนในเครื่องนี้ (ปุ่ม "เริ่มใหม่") — ไม่ได้ลบข้อมูลบนบอร์ด */
-export function forgetProfile(): void {
-  try {
-    localStorage.removeItem(DEVICE_KEY)
-    localStorage.removeItem(PROFILE_KEY)
-  } catch {
-    /* ignore */
-  }
-}
 
 /* ==========================================================================
  * PROFILE
@@ -179,19 +133,6 @@ export async function updateBodyProfile(input: ProfileInput): Promise<Result<Pro
   }
 
   return { data: data as Profile, error: null }
-}
-
-/** แปลง Profile จาก DB เป็นรูปแบบที่ health.ts ใช้คำนวณได้ — null ถ้าข้อมูลไม่ครบ */
-export function toBodyProfile(profile: Profile | null): BodyProfile | null {
-  if (!profile || !profile.gender || !profile.height_cm || !profile.weight_kg || !profile.age) {
-    return null
-  }
-  return {
-    gender: profile.gender,
-    heightCm: Number(profile.height_cm),
-    weightKg: Number(profile.weight_kg),
-    age: profile.age,
-  }
 }
 
 /* ==========================================================================

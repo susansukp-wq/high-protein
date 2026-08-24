@@ -119,3 +119,33 @@ export function judgeMeal(kcal: number, profile: BodyProfile): MealJudgement {
 
   return { verdict, budget, excess, percent }
 }
+
+/* ==========================================================================
+ * แปลงข้อมูลจาก DB
+ * ======================================================================== */
+
+/**
+ * แปลง Profile จากฐานข้อมูลเป็นรูปแบบที่ฟังก์ชันในไฟล์นี้ใช้คำนวณได้
+ * คืน null ถ้าข้อมูลร่างกายยังไม่ครบ (โปรไฟล์เก่าที่สมัครก่อนมีฟีเจอร์นี้)
+ *
+ * อยู่ในไฟล์นี้เพราะเป็นฟังก์ชันบริสุทธิ์ ไม่แตะ DB
+ * ถ้าไปอยู่ใน profile.ts คนที่อยากใช้แค่ฟังก์ชันนี้จะต้องลาก supabase-js มาด้วย
+ */
+export function toBodyProfile(
+  profile: {
+    gender?: Gender | null
+    height_cm?: number | null
+    weight_kg?: number | null
+    age?: number | null
+  } | null,
+): BodyProfile | null {
+  if (!profile?.gender || !profile.height_cm || !profile.weight_kg || !profile.age) {
+    return null
+  }
+  return {
+    gender: profile.gender,
+    heightCm: Number(profile.height_cm),
+    weightKg: Number(profile.weight_kg),
+    age: profile.age,
+  }
+}
