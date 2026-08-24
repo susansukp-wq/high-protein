@@ -139,7 +139,7 @@ const sampleRows = SEO_TABLE_FOODS.slice(0, 6)
       </p>
 
       <div class="mt-6 overflow-x-auto border-4 border-steel">
-        <table class="w-full min-w-[480px] text-left text-sm">
+        <table class="table-stack w-full sm:min-w-[480px] text-left text-sm">
           <thead class="bg-hazard text-void">
             <tr>
               <th scope="col" class="px-4 py-3 font-black">อาหาร</th>
@@ -152,14 +152,14 @@ const sampleRows = SEO_TABLE_FOODS.slice(0, 6)
             {
               sampleRows.map((food) => (
                 <tr class="border-t-2 border-steel odd:bg-concrete">
-                  <td class="px-4 py-3 font-bold text-white">
+                  <th scope="row" class="px-4 py-3 text-left font-bold text-white">
                     {food.emoji} {food.name}
-                  </td>
-                  <td class="px-4 py-3 text-neutral-500">{food.serving}</td>
-                  <td class="px-4 py-3 text-right font-bold text-neutral-300">
+                  </th>
+                  <td data-label="หน่วย" class="px-4 py-3 text-neutral-500">{food.serving}</td>
+                  <td data-label="แคลอรี่" class="px-4 py-3 text-right font-bold text-neutral-300">
                     {food.kcal.toLocaleString()}
                   </td>
-                  <td class="px-4 py-3 text-right font-black text-blood">
+                  <td data-label="ต้องวิ่ง" class="px-4 py-3 text-right font-black text-blood">
                     {formatDurationShort(calculateBurnTime(food.kcal, DEFAULT_WEIGHT_KG, RUNNING_METS))}
                   </td>
                 </tr>

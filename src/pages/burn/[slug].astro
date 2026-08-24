@@ -239,7 +239,7 @@ const jsonLd = [
       </p>
 
       <div class="mt-6 overflow-x-auto border-4 border-steel">
-        <table class="w-full min-w-[640px] text-left text-sm">
+        <table class="table-stack w-full sm:min-w-[640px] text-left text-sm">
           <caption class="sr-only">
             ตารางเวลาที่ต้อง{activity.name_th}เพื่อเผาผลาญอาหารยอดฮิต แยกตามน้ำหนักตัว
           </caption>
@@ -264,11 +264,14 @@ const jsonLd = [
                     {food.emoji} {food.name}
                     <span class="block text-xs font-normal text-neutral-500">{food.serving}</span>
                   </th>
-                  <td class="px-4 py-3 text-right font-bold text-neutral-300">
+                  <td data-label="แคลอรี่" class="px-4 py-3 text-right font-bold text-neutral-300">
                     {food.kcal.toLocaleString()}
                   </td>
-                  {food.minutesByWeight.map((minutes) => (
-                    <td class="px-4 py-3 text-right font-black whitespace-nowrap text-blood">
+                  {food.minutesByWeight.map((minutes, i) => (
+                    <td
+                      data-label={`${WEIGHT_TIERS[i]} กก.`}
+                      class="px-4 py-3 text-right font-black whitespace-nowrap text-blood"
+                    >
                       {formatDurationShort(minutes)}
                     </td>
                   ))}
@@ -290,7 +293,7 @@ const jsonLd = [
       <p class="mt-2 text-sm text-neutral-400">คำนวณย้อนกลับจากค่า {activity.mets} METs</p>
 
       <div class="mt-6 overflow-x-auto border-4 border-steel bg-void">
-        <table class="w-full min-w-[560px] text-left text-sm">
+        <table class="table-stack w-full sm:min-w-[560px] text-left text-sm">
           <caption class="sr-only">
             ตารางแคลอรี่ที่เผาผลาญได้จากการ{activity.name_th} แยกตามระยะเวลาและน้ำหนักตัว
           </caption>
@@ -313,8 +316,11 @@ const jsonLd = [
                   <th scope="row" class="px-4 py-3 text-left font-bold text-white whitespace-nowrap">
                     {formatDurationShort(row.minutes)}
                   </th>
-                  {row.kcalByWeight.map((kcal) => (
-                    <td class="px-4 py-3 text-right font-black text-hazard">
+                  {row.kcalByWeight.map((kcal, i) => (
+                    <td
+                      data-label={`${WEIGHT_TIERS[i]} กก.`}
+                      class="px-4 py-3 text-right font-black text-hazard"
+                    >
                       {kcal.toLocaleString()} <span class="text-xs text-neutral-500">kcal</span>
                     </td>
                   ))}
@@ -347,7 +353,7 @@ const jsonLd = [
       </p>
 
       <div class="mt-6 overflow-x-auto border-4 border-steel">
-        <table class="w-full min-w-[520px] text-left text-sm">
+        <table class="table-stack w-full sm:min-w-[520px] text-left text-sm">
           <caption class="sr-only">
             ตารางแคลอรี่ของสั่งเพิ่มและเวลาที่ต้อง{activity.name_th}เพิ่ม
           </caption>
@@ -366,11 +372,11 @@ const jsonLd = [
                   <th scope="row" class="px-4 py-3 text-left font-bold whitespace-nowrap text-white">
                     {row.label}
                   </th>
-                  <td class="px-4 py-3 text-neutral-500">{row.detail}</td>
-                  <td class="px-4 py-3 text-right font-bold text-neutral-300">
+                  <td data-label="คิดยังไง" class="px-4 py-3 text-neutral-500">{row.detail}</td>
+                  <td data-label="แคลอรี่" class="px-4 py-3 text-right font-bold text-neutral-300">
                     +{row.kcal.toLocaleString()}
                   </td>
-                  <td class="px-4 py-3 text-right font-black whitespace-nowrap text-blood">
+                  <td data-label="ต้องเพิ่ม" class="px-4 py-3 text-right font-black whitespace-nowrap text-blood">
                     +{formatDurationShort(row.minutes)}
                   </td>
                 </tr>

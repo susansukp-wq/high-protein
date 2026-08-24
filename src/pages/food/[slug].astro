@@ -322,7 +322,7 @@ const jsonLd = [
       </p>
 
       <div class="mt-6 overflow-x-auto border-4 border-steel">
-        <table class="w-full min-w-[420px] text-left text-sm">
+        <table class="table-stack w-full sm:min-w-[420px] text-left text-sm">
           <caption class="sr-only">
             ตารางเวลาที่ต้องใช้ในแต่ละกิจกรรมเพื่อเผาผลาญ{food.name}
           </caption>
@@ -342,8 +342,8 @@ const jsonLd = [
                       {activity.emoji} {activity.name_th}
                     </a>
                   </th>
-                  <td class="px-4 py-3 text-right font-bold text-neutral-500">{activity.mets}</td>
-                  <td class="px-4 py-3 text-right font-black whitespace-nowrap text-blood">
+                  <td data-label="METs" class="px-4 py-3 text-right font-bold text-neutral-500">{activity.mets}</td>
+                  <td data-label="ต้องใช้เวลา" class="px-4 py-3 text-right font-black whitespace-nowrap text-blood">
                     {formatDurationShort(minutes)}
                   </td>
                 </tr>

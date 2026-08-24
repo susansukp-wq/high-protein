@@ -13,6 +13,7 @@
   --color-void: #0a0a0a; /* ดำสนิท */
   --color-concrete: #171717; /* ดำอมเทา (พื้นการ์ด) */
   --color-steel: #262626; /* เส้นขอบ */
+  --color-muted: #8a8a8a; /* ข้อความรอง */
 
   --font-display: 'Anuphan', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Anuphan', ui-sans-serif, system-ui, sans-serif;
@@ -83,6 +84,67 @@
 @utility panel-brutal {
   border-width: 4px;
   box-shadow: 8px 8px 0 0 var(--color-void);
+}
+
+/* ==========================================================================
+   ตารางบนมือถือ — แปลงเป็นการ์ดซ้อนแทนการเลื่อนแนวนอน
+   --------------------------------------------------------------------------
+   ตารางในเว็บนี้กว้าง 360–640px ซึ่งล้นจอมือถือทุกรุ่น (iPhone SE 375px,
+   Android ทั่วไป 360–412px) ผู้ใช้ไทยเข้าจากมือถือเป็นส่วนใหญ่
+   การบังคับให้เลื่อนแนวนอนเพื่ออ่านตัวเลขคือประสบการณ์ที่แย่ที่สุดของเว็บนี้
+
+   วิธีแก้: บนจอเล็กซ่อน thead แล้วให้แต่ละแถวกลายเป็นการ์ด
+   โดยดึงชื่อคอลัมน์จาก data-label มาแสดงหน้าค่าของแต่ละช่อง
+   ใช้ DOM ชุดเดียว ไม่ต้อง render ตารางสองแบบให้ Google สับสน
+   ========================================================================== */
+@media (max-width: 639px) {
+  .table-stack,
+  .table-stack tbody {
+    display: block;
+  }
+
+  .table-stack thead {
+    display: none;
+  }
+
+  .table-stack tr {
+    display: block;
+    border-top: 4px solid var(--color-steel);
+    padding: 0.55rem 0;
+  }
+
+  .table-stack tbody tr:first-child {
+    border-top: 0;
+  }
+
+  .table-stack td,
+  .table-stack th {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.28rem 0.9rem;
+    text-align: right;
+    white-space: normal;
+  }
+
+  /* ชื่อรายการของแถว — เป็นหัวการ์ด กินเต็มความกว้าง ไม่มีป้ายกำกับ */
+  .table-stack th[scope='row'] {
+    display: block;
+    padding-bottom: 0.1rem;
+    text-align: left;
+    font-size: 1rem;
+  }
+
+  /* ป้ายกำกับที่ดึงมาจากหัวคอลัมน์ */
+  .table-stack [data-label]::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-muted, #8a8a8a);
+  }
 }
 
 /* ==========================================================================

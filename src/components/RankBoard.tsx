@@ -253,7 +253,7 @@ function FameTable({ rows, myId }: { rows: LeaderboardRow[]; myId?: string }) {
 
   return (
     <div className="overflow-x-auto border-4 border-steel">
-      <table className="w-full min-w-[520px] text-left text-sm">
+      <table className="table-stack w-full sm:min-w-[520px] text-left text-sm">
         <thead className="bg-hazard text-void">
           <tr>
             <th scope="col" className="px-3 py-3 font-black">#</th>
@@ -273,20 +273,20 @@ function FameTable({ rows, myId }: { rows: LeaderboardRow[]; myId?: string }) {
                   row.id === myId ? 'bg-hazard/15' : 'odd:bg-concrete'
                 }`}
               >
-                <td className="px-3 py-3 font-black text-neutral-500">
+                <td data-label="อันดับ" className="px-3 py-3 font-black text-neutral-500">
                   {MEDALS[index] ?? index + 1}
                 </td>
                 <th scope="row" className="px-3 py-3 text-left font-bold text-white">
                   {row.nickname}
                   {row.id === myId && <span className="ml-1 text-xs text-hazard">(คุณ)</span>}
                 </th>
-                <td className={`px-3 py-3 font-bold whitespace-nowrap ${rank.color}`}>
+                <td data-label="ยศ" className={`px-3 py-3 font-bold whitespace-nowrap ${rank.color}`}>
                   {rank.emoji} {rank.title}
                 </td>
-                <td className="px-3 py-3 text-right font-black whitespace-nowrap text-hazard">
+                <td data-label="ชดใช้แล้ว" className="px-3 py-3 text-right font-black whitespace-nowrap text-hazard">
                   {formatDurationShort(row.total_paid_minutes)}
                 </td>
-                <td className="px-3 py-3 text-right font-bold whitespace-nowrap text-neutral-400">
+                <td data-label="สตรีค" className="px-3 py-3 text-right font-bold whitespace-nowrap text-neutral-400">
                   {row.current_streak > 0 ? `${row.current_streak} วัน` : '-'}
                 </td>
               </tr>
@@ -311,7 +311,7 @@ function ShameTable({ rows, myId }: { rows: LeaderboardRow[]; myId?: string }) {
   return (
     <div className="danger-stripes p-1">
       <div className="overflow-x-auto bg-void">
-        <table className="w-full min-w-[520px] text-left text-sm">
+        <table className="table-stack w-full sm:min-w-[520px] text-left text-sm">
           <thead className="bg-blood text-white">
             <tr>
               <th scope="col" className="px-3 py-3 font-black">#</th>
@@ -330,15 +330,15 @@ function ShameTable({ rows, myId }: { rows: LeaderboardRow[]; myId?: string }) {
                     row.id === myId ? 'bg-blood/20' : 'odd:bg-concrete'
                   }`}
                 >
-                  <td className="px-3 py-3 font-black text-neutral-500">{index + 1}</td>
+                  <td data-label="อันดับ" className="px-3 py-3 font-black text-neutral-500">{index + 1}</td>
                   <th scope="row" className="px-3 py-3 text-left font-bold text-white">
                     {row.nickname}
                     {row.id === myId && <span className="ml-1 text-xs text-blood">(คุณ)</span>}
                   </th>
-                  <td className="px-3 py-3 font-bold whitespace-nowrap text-red-300">
+                  <td data-label="ข้อหา" className="px-3 py-3 font-bold whitespace-nowrap text-red-300">
                     {shame.emoji} {shame.title}
                   </td>
-                  <td className="px-3 py-3 text-right font-black whitespace-nowrap text-blood">
+                  <td data-label="หนี้ค้าง" className="px-3 py-3 text-right font-black whitespace-nowrap text-blood">
                     {formatDurationShort(row.debt_minutes)}
                   </td>
                 </tr>
