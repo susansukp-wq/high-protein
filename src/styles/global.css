@@ -1,3 +1,16 @@
+/*
+ * ฟอนต์ Anuphan โหลดจาก node_modules ไม่ใช่จาก Google Fonts
+ *
+ * ทำไม: การใช้ Google Fonts ทำให้เบราว์เซอร์ต้องต่อไปอีก 2 โดเมน
+ * (fonts.googleapis.com แล้วค่อยตามไป fonts.gstatic.com) ซึ่งเป็น
+ * request แบบต่อกันเป็นทอด กว่าจะได้ฟอนต์มาแสดงผลก็ช้ากว่าโหลดจากโดเมนตัวเอง
+ * ผลพลอยได้คือไม่มีข้อมูลผู้เข้าชมวิ่งไปหา Google โดยไม่จำเป็น
+ *
+ * ไฟล์ .css ของ @fontsource แยก @font-face ตาม unicode-range
+ * เบราว์เซอร์จึงโหลดเฉพาะ subset ที่หน้านั้นใช้จริง (ไทยอย่างเดียวถ้าไม่มีอังกฤษ)
+ */
+@import '@fontsource/anuphan/400.css';
+@import '@fontsource/anuphan/700.css';
 @import 'tailwindcss';
 
 /* ==========================================================================
