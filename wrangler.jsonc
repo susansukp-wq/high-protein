@@ -1,0 +1,17 @@
+{
+  // ตั้งค่าสำหรับ Cloudflare Workers (Static Assets)
+  //
+  // โปรเจกต์นี้เป็นเว็บ static ล้วน ไม่มีโค้ดฝั่งเซิร์ฟเวอร์
+  // Workers ทำหน้าที่แค่เสิร์ฟไฟล์ในโฟลเดอร์ dist ผ่าน CDN ของ Cloudflare
+  // การเสิร์ฟไฟล์ static แบบนี้ไม่นับเป็น request ที่คิดเงิน จึงฟรีไม่จำกัด
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "high-protein",
+  "compatibility_date": "2026-08-24",
+
+  "assets": {
+    "directory": "./dist",
+    // ถ้าหา URL ไม่เจอ ให้เสิร์ฟ dist/404.html พร้อมสถานะ 404 ที่ถูกต้อง
+    // สำคัญกับ SEO: ห้ามตอบ 200 ให้หน้าที่ไม่มีอยู่จริง ไม่งั้น Google จะเก็บหน้าขยะเข้า index
+    "not_found_handling": "404-page"
+  }
+}

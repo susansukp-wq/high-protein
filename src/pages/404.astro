@@ -1,0 +1,46 @@
+---
+import Layout from '../layouts/Layout.astro'
+
+/**
+ * หน้า 404 — จำเป็นสำหรับ Cloudflare Workers Static Assets
+ * ตั้งค่า not_found_handling ให้ชี้มาที่ไฟล์นี้ใน wrangler.jsonc
+ */
+const suggestions = [
+  { href: '/', label: '🔥 หน้าแรก — คำนวณโทษของมื้อนี้' },
+  { href: '/rank', label: '🏆 จัดอันดับ — ดูว่าใครขึ้นบอร์ดประจานบ้าง' },
+  { href: '/food/moo-krata', label: '🍖 หมูกระทะกี่แคลอรี่?' },
+  { href: '/burn/running', label: '🏃 วิ่ง 1 ชั่วโมงเบิร์นกี่แคล?' },
+]
+---
+
+<Layout
+  title="ไม่เจอหน้านี้ (404) | ลดน้ำหนักไม่มีคำว่าปลอบใจ"
+  description="หน้าที่คุณหาไม่มีอยู่จริง เหมือนกับข้ออ้างที่ใช้ไม่ไปออกกำลังกาย"
+>
+  <section class="px-4 py-20 text-center">
+    <div class="mx-auto max-w-2xl">
+      <p class="font-display text-stencil text-7xl font-black text-blood sm:text-9xl">404</p>
+      <h1 class="mt-4 font-display text-2xl font-black text-white sm:text-3xl">
+        หน้านี้ไม่มีอยู่จริง
+      </h1>
+      <p class="mt-3 text-base text-neutral-400">
+        เหมือนกับข้ออ้างที่ใช้ไม่ไปออกกำลังกายเมื่ออาทิตย์ที่แล้วนั่นแหละ
+      </p>
+
+      <ul class="mx-auto mt-10 max-w-md space-y-3 text-left">
+        {
+          suggestions.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="block border-2 border-steel bg-concrete px-4 py-3 font-bold text-white transition hover:border-hazard hover:text-hazard"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</Layout>

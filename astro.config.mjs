@@ -6,8 +6,8 @@ import tailwindcss from '@tailwindcss/vite'
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  // ⚠️ เปลี่ยนเป็นโดเมนจริงก่อน deploy — มีผลกับ canonical URL และ sitemap
-  site: 'https://no-mercy-diet.com',
+  // โดเมนจริงของเว็บ — มีผลกับ canonical URL, sitemap, robots.txt และ og:image ทุกหน้า
+  site: 'https://nomercydiet.com',
 
   integrations: [
     react(),
