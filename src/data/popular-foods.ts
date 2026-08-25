@@ -30,6 +30,7 @@ export type FoodCategory =
   | 'snack' // ขนมซอง / ของกินเล่น
   | 'fruit' // ผลไม้
   | 'clean' // อาหารคลีน
+  | 'convenience' // ร้านสะดวกซื้อ
 
 export const FOOD_CATEGORY_LABEL: Record<FoodCategory, string> = {
   rice_dish: 'ข้าวจานเดียว',
@@ -50,6 +51,7 @@ export const FOOD_CATEGORY_LABEL: Record<FoodCategory, string> = {
   snack: 'ขนมซอง / ของกินเล่น',
   fruit: 'ผลไม้',
   clean: 'อาหารคลีน',
+  convenience: 'ร้านสะดวกซื้อ',
 }
 
 /**
@@ -91,6 +93,8 @@ export const FOOD_CATEGORY_NOTE: Record<FoodCategory, string> = {
     'ขนมซองมีปัญหาเรื่องการกินแบบไม่รู้ตัวมากที่สุด เพราะกินไปทำอย่างอื่นไปจนหมดถุงโดยไม่ทันสังเกต วิธีที่ได้ผลคือแบ่งใส่ถ้วยตามปริมาณที่ตั้งใจจะกิน แล้วเก็บถุงให้พ้นสายตา',
   fruit:
     'ผลไม้ให้พลังงานจากน้ำตาลธรรมชาติพร้อมใยอาหารและวิตามิน จึงต่างจากน้ำตาลในขนมอย่างชัดเจน แต่ผลไม้ไทยหลายชนิดหวานจัดกว่าที่คิด โดยเฉพาะทุเรียนที่ให้พลังงานสูงกว่าผลไม้ทั่วไปหลายเท่าเพราะมีไขมันด้วย',
+  convenience:
+    'ของกินในร้านสะดวกซื้อมีข้อได้เปรียบที่อาหารร้านทั่วไปไม่มี คือมีฉลากโภชนาการบอกตัวเลขจริงติดอยู่ที่ซอง ไม่ต้องเดาเหมือนข้าวราดแกงที่แต่ละร้านใส่น้ำมันไม่เท่ากัน ข้อเสียคือของพวกนี้ออกแบบมาให้หยิบง่ายและกินระหว่างทาง ทำให้กลายเป็นมื้อที่สี่ของวันโดยไม่ได้แทนอะไรเลย จุดที่ควรระวังที่สุดคือเครื่องดื่มกับของว่างที่หยิบพ่วงมาตอนจ่ายเงิน ซึ่งมักรวมกันได้เกิน 400 แคลอรี่โดยที่ไม่รู้สึกว่ากินอะไร',
   clean:
     'อาหารคลีนไม่ได้แปลว่ากินได้ไม่จำกัด กฎการลดน้ำหนักยังคงเป็นเรื่องของพลังงานรวมที่เข้ากับที่ออกเสมอ ข้อได้เปรียบจริงของหมวดนี้คือโปรตีนสูงและใยอาหารมาก ทำให้อิ่มนานกว่าที่พลังงานเท่ากัน',
 }
@@ -548,6 +552,63 @@ export const POPULAR_FOODS: FoodItem[] = [
   { slug: 'longan', name: 'ลำไย', kcal: 130, serving: '10 ลูก', emoji: '🟤', category: 'fruit' },
   { slug: 'rambutan', name: 'เงาะ', kcal: 150, serving: '10 ลูก', emoji: '🔴', category: 'fruit' },
   { slug: 'jackfruit', name: 'ขนุน', kcal: 160, serving: '5 ยวง', emoji: '🟡', category: 'fruit' },
+
+  /* ---------------- 🏪 ร้านสะดวกซื้อ: ข้าวกล่องอุ่นร้อน ---------------- */
+  { slug: 'cvs-box-kaphrao', name: 'ข้าวกล่องกะเพราหมูสับ', kcal: 500, serving: '1 กล่อง', emoji: '🍱', category: 'convenience', aliases: ['ข้าวกล่อง 7-11', 'กะเพรา 7-11', 'ข้าวกล่องกะเพรา'] },
+  { slug: 'cvs-box-khao-man-kai', name: 'ข้าวกล่องข้าวมันไก่', kcal: 530, serving: '1 กล่อง', emoji: '🍱', category: 'convenience', aliases: ['ข้าวมันไก่ 7-11'] },
+  { slug: 'cvs-box-moo-daeng', name: 'ข้าวกล่องข้าวหมูแดง', kcal: 480, serving: '1 กล่อง', emoji: '🍱', category: 'convenience' },
+  { slug: 'cvs-box-kha-moo', name: 'ข้าวกล่องข้าวขาหมู', kcal: 550, serving: '1 กล่อง', emoji: '🍱', category: 'convenience' },
+  { slug: 'cvs-box-kana-moo-krob', name: 'ข้าวกล่องคะน้าหมูกรอบ', kcal: 520, serving: '1 กล่อง', emoji: '🍱', category: 'convenience' },
+  { slug: 'cvs-box-kai-jeaw', name: 'ข้าวกล่องข้าวไข่เจียว', kcal: 500, serving: '1 กล่อง', emoji: '🍱', category: 'convenience' },
+  { slug: 'cvs-box-american', name: 'ข้าวกล่องข้าวผัดอเมริกัน', kcal: 700, serving: '1 กล่อง', emoji: '🍱', category: 'convenience' },
+  { slug: 'cvs-box-pad-thai', name: 'ข้าวกล่องผัดไทย', kcal: 470, serving: '1 กล่อง', emoji: '🍱', category: 'convenience' },
+  { slug: 'cvs-box-spaghetti', name: 'สปาเกตตี้กล่องขี้เมา', kcal: 450, serving: '1 กล่อง', emoji: '🍝', category: 'convenience' },
+  { slug: 'cvs-box-gyudon', name: 'ข้าวกล่องข้าวหน้าเนื้อ', kcal: 550, serving: '1 กล่อง', emoji: '🍱', category: 'convenience' },
+  { slug: 'cvs-sticky-fried-chicken', name: 'ข้าวเหนียวไก่ทอด', kcal: 450, serving: '1 ห่อ', emoji: '🍗', category: 'convenience' },
+  { slug: 'cvs-jok-cup', name: 'โจ๊กคัพ', kcal: 140, serving: '1 ถ้วย', emoji: '🥣', category: 'convenience', aliases: ['โจ๊กถ้วย', 'โจ๊กคัพ'] },
+
+  /* ---------------- 🏪 ร้านสะดวกซื้อ: นึ่ง / ทอดหน้าเคาน์เตอร์ ---------------- */
+  { slug: 'cvs-salapao-moo', name: 'ซาลาเปาไส้หมูสับ', kcal: 200, serving: '1 ลูก', emoji: '🥟', category: 'convenience', aliases: ['ซาลาเปา'] },
+  { slug: 'cvs-salapao-cream', name: 'ซาลาเปาไส้ครีม', kcal: 230, serving: '1 ลูก', emoji: '🥟', category: 'convenience', aliases: ['ซาลาเปาครีม', 'ซาลาเปาสังขยา'] },
+  { slug: 'cvs-kanom-jeeb', name: 'ขนมจีบ', kcal: 180, serving: '4 ลูก', emoji: '🥟', category: 'convenience' },
+  { slug: 'cvs-sausage-vienna', name: 'ไส้กรอกเวียนนา', kcal: 250, serving: '1 ซอง (5 ชิ้น)', emoji: '🌭', category: 'convenience', aliases: ['ไส้กรอกเวียนนา'] },
+  { slug: 'cvs-sausage-cheese', name: 'ไส้กรอกชีส', kcal: 180, serving: '1 ไม้', emoji: '🧀', category: 'convenience' },
+  { slug: 'cvs-tod-man', name: 'ทอดมันปลา', kcal: 250, serving: '3 ชิ้น', emoji: '🐟', category: 'convenience', aliases: ['ทอดมัน'] },
+  { slug: 'cvs-hotdog', name: 'ฮอทดอกใหญ่', kcal: 380, serving: '1 ชิ้น', emoji: '🌭', category: 'convenience' },
+  { slug: 'cvs-burger', name: 'แฮมเบอร์เกอร์อุ่นร้อน', kcal: 350, serving: '1 ชิ้น', emoji: '🍔', category: 'convenience' },
+  { slug: 'cvs-onsen-egg', name: 'ไข่ออนเซ็น', kcal: 80, serving: '1 ฟอง', emoji: '🥚', category: 'convenience', aliases: ['ไข่ออนเซน'] },
+
+  /* ---------------- 🏪 ร้านสะดวกซื้อ: เบเกอรี่ / แซนด์วิช ---------------- */
+  { slug: 'cvs-sandwich-tuna', name: 'แซนด์วิชทูน่า', kcal: 300, serving: '1 ชิ้น', emoji: '🥪', category: 'convenience', aliases: ['แซนวิชทูน่า'] },
+  { slug: 'cvs-sandwich-egg', name: 'แซนด์วิชไข่', kcal: 280, serving: '1 ชิ้น', emoji: '🥪', category: 'convenience' },
+  { slug: 'cvs-croissant-sausage', name: 'ครัวซองต์ไส้กรอก', kcal: 330, serving: '1 ชิ้น', emoji: '🥐', category: 'convenience' },
+  { slug: 'cvs-pie-chicken', name: 'พายไก่', kcal: 250, serving: '1 ชิ้น', emoji: '🥧', category: 'convenience', aliases: ['พายไก่'] },
+  { slug: 'cvs-pie-pineapple', name: 'พายสับปะรด', kcal: 230, serving: '1 ชิ้น', emoji: '🥧', category: 'convenience' },
+  { slug: 'cvs-bread-sangkaya', name: 'ขนมปังสังขยา', kcal: 260, serving: '1 ห่อ', emoji: '🍞', category: 'convenience' },
+  { slug: 'cvs-cake-slice', name: 'เค้กชิ้น', kcal: 320, serving: '1 ชิ้น', emoji: '🍰', category: 'convenience' },
+
+  /* ---------------- 🏪 ร้านสะดวกซื้อ: เครื่องดื่ม ---------------- */
+  { slug: 'cvs-latte-iced', name: 'ลาเต้เย็น (ร้านสะดวกซื้อ)', kcal: 180, serving: '1 แก้ว', emoji: '☕', category: 'convenience', aliases: ['ออลคาเฟ่', 'all cafe', 'ลาเต้เย็น 7-11'] },
+  { slug: 'cvs-cappuccino', name: 'คาปูชิโน่เย็น', kcal: 200, serving: '1 แก้ว', emoji: '☕', category: 'convenience' },
+  { slug: 'cvs-black-coffee', name: 'กาแฟดำเย็นไม่ใส่น้ำตาล', kcal: 10, serving: '1 แก้ว', emoji: '☕', category: 'convenience' },
+  { slug: 'cvs-slurpee', name: 'สแลชชี่น้ำแข็งปั่น', kcal: 150, serving: '1 แก้วกลาง', emoji: '🥤', category: 'convenience', aliases: ['สแลชชี่', 'slurpee'] },
+  { slug: 'cvs-green-tea-bottle', name: 'ชาเขียวขวด', kcal: 120, serving: '1 ขวด', emoji: '🍵', category: 'convenience', aliases: ['ชาเขียวขวด', 'โออิชิ', 'อิชิตัน'] },
+  { slug: 'cvs-yogurt-drink', name: 'นมเปรี้ยวพร้อมดื่ม', kcal: 130, serving: '1 ขวด', emoji: '🥛', category: 'convenience', aliases: ['นมเปรี้ยว', 'ยาคูลท์'] },
+  { slug: 'cvs-milk-box', name: 'นมกล่องรสจืด', kcal: 120, serving: '1 กล่อง 200 มล.', emoji: '🥛', category: 'convenience', aliases: ['นมกล่อง'] },
+  { slug: 'cvs-choc-milk', name: 'นมช็อกโกแลต', kcal: 180, serving: '1 กล่อง', emoji: '🍫', category: 'convenience' },
+  { slug: 'cvs-energy-drink', name: 'เครื่องดื่มชูกำลัง', kcal: 120, serving: '1 ขวด', emoji: '⚡', category: 'convenience', aliases: ['กระทิงแดง', 'เอ็ม150', 'ชูกำลัง'] },
+  { slug: 'cvs-chicken-essence', name: 'ซุปไก่สกัด', kcal: 30, serving: '1 ขวด', emoji: '🍯', category: 'convenience' },
+  { slug: 'cvs-water', name: 'น้ำเปล่า', kcal: 0, serving: '1 ขวด', emoji: '💧', category: 'convenience', aliases: ['น้ำเปล่า', 'น้ำดื่ม'] },
+
+  /* ---------------- 🏪 ร้านสะดวกซื้อ: ขนม / ของว่าง ---------------- */
+  { slug: 'cvs-ice-cream-bar', name: 'ไอศกรีมแท่งเคลือบช็อกโกแลต', kcal: 250, serving: '1 แท่ง', emoji: '🍫', category: 'convenience', aliases: ['ไอศกรีมแท่ง'] },
+  { slug: 'cvs-ice-cream-cone', name: 'ไอศกรีมโคน', kcal: 200, serving: '1 อัน', emoji: '🍦', category: 'convenience' },
+  { slug: 'cvs-fish-snack', name: 'ปลาเส้น', kcal: 120, serving: '1 ซอง', emoji: '🐟', category: 'convenience', aliases: ['ปลาเส้น'] },
+  { slug: 'cvs-prawn-cracker', name: 'ข้าวเกรียบกุ้ง', kcal: 250, serving: '1 ถุง', emoji: '🍤', category: 'convenience' },
+  { slug: 'cvs-cookie-pack', name: 'คุกกี้ห่อเล็ก', kcal: 200, serving: '1 ห่อ', emoji: '🍪', category: 'convenience' },
+  { slug: 'cvs-jelly', name: 'เยลลี่', kcal: 80, serving: '1 ถ้วย', emoji: '🍮', category: 'convenience' },
+  { slug: 'cvs-salad', name: 'สลัดผักพร้อมทาน', kcal: 150, serving: '1 กล่อง', emoji: '🥗', category: 'convenience' },
+  { slug: 'cvs-cut-fruit', name: 'ผลไม้ตัดพร้อมทาน', kcal: 90, serving: '1 กล่อง', emoji: '🍉', category: 'convenience' },
 
   /* ---------------- อาหารคลีน ---------------- */
   { slug: 'chicken-salad', name: 'สลัดอกไก่', kcal: 350, serving: '1 จาน', emoji: '🥗', category: 'clean', aliases: ['สลัด'] },

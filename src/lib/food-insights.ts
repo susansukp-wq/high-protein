@@ -167,6 +167,7 @@ const CATEGORY_AFFINITY: Record<FoodCategory, ActivityGroup[]> = {
   breakfast: ['daily', 'soft'],
   fruit: ['no_excuse', 'daily'],
   clean: ['soft', 'daily'],
+  convenience: ['no_excuse', 'daily'],
 }
 
 /** จำนวนกิจกรรมที่โชว์ต่อหน้า */

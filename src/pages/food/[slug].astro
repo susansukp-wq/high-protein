@@ -69,14 +69,25 @@ const percentOfDay = Math.round((food.kcal / THAI_RDI.male) * 100)
 const riceEquivalent = Math.round((food.kcal / 240) * 10) / 10
 
 const analysis = analyseFood(food)
+
+/**
+ * เมนูที่ไม่มีพลังงานเลย เช่นน้ำเปล่า
+ * ถ้าใช้ข้อความชุดเดียวกับเมนูอื่นจะได้พาดหัวว่า "0 kcal ต้องออกกำลังกายกี่นาที"
+ * ซึ่งไม่มีความหมายและเป็นหน้าเนื้อหาบางในสายตา Google
+ */
+const isZeroCalorie = food.kcal === 0
 const content = getFoodContent(food.slug)
 
 const related = POPULAR_FOODS.filter(
   (f) => f.category === food.category && f.slug !== food.slug,
 ).slice(0, 6)
 
-const title = `${food.name} กี่แคลอรี่? ${food.kcal.toLocaleString()} kcal ต้องออกกำลังกายกี่นาที`
-const description = `${food.name} (${food.serving}) ให้พลังงาน ${food.kcal.toLocaleString()} แคลอรี่ เทียบเท่าข้าวสวย ${riceEquivalent} จาน ดูว่าต้องวิ่ง ว่ายน้ำ หรือต่อยมวยกี่นาทีถึงจะเผาผลาญหมด คำนวณจากค่า METs จริง`
+const title = isZeroCalorie
+  ? `${food.name} กี่แคลอรี่? คำตอบคือ 0 — ไม่ต้องชดใช้อะไรทั้งนั้น`
+  : `${food.name} กี่แคลอรี่? ${food.kcal.toLocaleString()} kcal ต้องออกกำลังกายกี่นาที`
+const description = isZeroCalorie
+  ? `${food.name} ไม่มีพลังงานเลยสักแคลอรี่ กินเท่าไหร่ก็ไม่ต้องออกกำลังกายชดใช้ ดูว่าเครื่องดื่มตัวไหนบ้างที่แลกมาด้วยการวิ่งเป็นชั่วโมง`
+  : `${food.name} (${food.serving}) ให้พลังงาน ${food.kcal.toLocaleString()} แคลอรี่ เทียบเท่าข้าวสวย ${riceEquivalent} จาน ดูว่าต้องวิ่ง ว่ายน้ำ หรือต่อยมวยกี่นาทีถึงจะเผาผลาญหมด คำนวณจากค่า METs จริง`
 
 const jsonLd = [
   {
@@ -182,14 +193,34 @@ const jsonLd = [
           {food.kcal.toLocaleString()}
           <span class="text-2xl text-neutral-500">kcal</span>
         </p>
-        <p class="text-base text-neutral-300">
-          คิดเป็น <strong class="text-white">{percentOfDay}%</strong> ของพลังงานที่ควรได้รับทั้งวัน
-          · เทียบเท่าข้าวสวย <strong class="text-white">{riceEquivalent} จาน</strong>
-        </p>
+        {
+          isZeroCalorie ? (
+            <p class="text-base text-neutral-300">
+              ไม่มีพลังงาน ไม่ต้องออกกำลังกายชดใช้แม้แต่นาทีเดียว
+            </p>
+          ) : (
+            <p class="text-base text-neutral-300">
+              คิดเป็น <strong class="text-white">{percentOfDay}%</strong>{' '}
+              ของพลังงานที่ควรได้รับทั้งวัน · เทียบเท่าข้าวสวย{' '}
+              <strong class="text-white">{riceEquivalent} จาน</strong>
+            </p>
+          )
+        }
       </div>
 
       {
-        fastest && (
+        isZeroCalorie && (
+          <p class="mt-6 text-base leading-relaxed text-neutral-300">
+            นี่คือรายการเดียวในเว็บนี้ที่ไม่ต้องชดใช้อะไรเลย ไม่มีพลังงาน ไม่มีน้ำตาล ไม่มีข้ออ้าง
+            ดื่มได้ไม่จำกัดโดยที่ระบบไม่มีอะไรจะด่า — ถ้าเปลี่ยนจากเครื่องดื่มหวานวันละแก้วมาเป็นสิ่งนี้
+            จะลดได้ราว 250–400 แคลอรี่ต่อวัน หรือเทียบเท่าไขมันราว 1–1.5 กิโลกรัมต่อเดือน
+            โดยไม่ต้องออกกำลังกายเพิ่มแม้แต่นาทีเดียว
+          </p>
+        )
+      }
+
+      {
+        !isZeroCalorie && fastest && (
           <p class="mt-6 text-base leading-relaxed text-neutral-300">
             ถ้าจะเผาผลาญให้หมด คนน้ำหนัก {DEFAULT_WEIGHT_KG} กก. ต้อง
             <strong class="text-hazard">
@@ -311,7 +342,7 @@ const jsonLd = [
   }
 
   <!-- ================= ตารางกิจกรรม ================= -->
-  <section class="px-4 py-14">
+  <section class="px-4 py-14" style={isZeroCalorie ? 'display:none' : ''}>
     <div class="mx-auto max-w-3xl">
       <h2 class="font-display text-2xl font-black text-white sm:text-3xl">
         กิน{food.name} ต้องทำอะไรกี่นาที
