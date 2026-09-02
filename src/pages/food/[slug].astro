@@ -118,7 +118,7 @@ function buildFoodTitle(name: string, kcalZero: boolean): string {
 const title = buildFoodTitle(food.name, isZeroCalorie)
 const description = isZeroCalorie
   ? `${food.name} ไม่มีพลังงานเลยสักแคลอรี่ กินเท่าไหร่ก็ไม่ต้องออกกำลังกายชดใช้ ดูว่าเครื่องดื่มตัวไหนบ้างที่แลกมาด้วยการวิ่งเป็นชั่วโมง`
-  : `กิน${food.name} 1 ${food.serving} แล้วต้องออกกำลังกายนานแค่ไหนถึงจะหมด? กรอกน้ำหนักตัวจริงแล้วดูคำตอบเฉพาะของคุณ เทียบ 10 กิจกรรมพร้อมกัน (${food.kcal.toLocaleString()} แคลอรี่ · เท่าข้าวสวย ${riceEquivalent} จาน)`
+  : `กิน${food.name} ${food.serving} แล้วต้องออกกำลังกายนานแค่ไหนถึงจะหมด? กรอกน้ำหนักตัวจริงแล้วดูคำตอบเฉพาะของคุณ เทียบ 10 กิจกรรมพร้อมกัน (${food.kcal.toLocaleString()} แคลอรี่ · เท่าข้าวสวย ${riceEquivalent} จาน)`
 
 const jsonLd = [
   {
