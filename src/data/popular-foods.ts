@@ -305,7 +305,7 @@ export const FOOD_ADDONS: FoodAddon[] = [
 export const POPULAR_FOODS: FoodItem[] = [
   /* ---------------- ข้าวจานเดียว ---------------- */
   { slug: 'khao-suay', name: 'ข้าวสวย', kcal: 240, serving: '1 จาน', emoji: '🍚', category: 'rice_dish', aliases: ['ข้าวเปล่า'] },
-  { slug: 'kaphrao-moo', name: 'ข้าวกะเพราหมูสับ', kcal: 550, serving: '1 จาน', emoji: '🌿', category: 'rice_dish', aliases: ['กะเพรา', 'กระเพรา', 'ข้าวกะเพรา', 'kaphrao'] },
+  { slug: 'kaphrao-moo', name: 'ข้าวกะเพราหมูสับ', kcal: 550, serving: '1 จาน', emoji: '🌿', category: 'rice_dish', aliases: ['กะเพรา', 'กระเพรา', 'ข้าวกะเพรา', 'ข้าวกระเพรา', 'กระเพราหมูสับ', 'kaphrao'] },
   { slug: 'kaphrao-kai-dao', name: 'ข้าวกะเพราหมูสับ + ไข่ดาว', kcal: 640, serving: '1 จาน', emoji: '🍳', category: 'rice_dish', aliases: ['กะเพราไข่ดาว', 'กระเพราไข่ดาว'] },
   { slug: 'kaphrao-kai-krob', name: 'ข้าวกะเพราไก่กรอบ', kcal: 700, serving: '1 จาน', emoji: '🍗', category: 'rice_dish', aliases: ['กะเพราไก่กรอบ'] },
   { slug: 'kaphrao-talay', name: 'ข้าวกะเพราทะเล', kcal: 560, serving: '1 จาน', emoji: '🦐', category: 'rice_dish', aliases: ['กะเพราทะเล'] },
@@ -438,7 +438,7 @@ export const POPULAR_FOODS: FoodItem[] = [
   { slug: 'look-chin-tod', name: 'ลูกชิ้นทอด', kcal: 400, serving: '10 ลูก', emoji: '🍢', category: 'fried' },
   { slug: 'sai-krok-tod', name: 'ไส้กรอกทอด', kcal: 350, serving: '5 ชิ้น', emoji: '🌭', category: 'fried' },
   { slug: 'gyoza', name: 'เกี๊ยวซ่าทอด', kcal: 380, serving: '6 ชิ้น', emoji: '🥟', category: 'fried', aliases: ['เกี๊ยวซ่า', 'gyoza'] },
-  { slug: 'popia-tod', name: 'ปอเปี๊ยะทอด', kcal: 300, serving: '5 ชิ้น', emoji: '🥟', category: 'fried', aliases: ['ปอเปี๊ยะ'] },
+  { slug: 'popia-tod', name: 'ปอเปี๊ยะทอด', kcal: 300, serving: '5 ชิ้น', emoji: '🥟', category: 'fried', aliases: ['ปอเปี๊ยะ', 'ปอเปียะทอด', 'เปาะเปี๊ยะทอด'] },
   { slug: 'pa-tong-go', name: 'ปาท่องโก๋', kcal: 320, serving: '4 ตัว', emoji: '🥖', category: 'fried' },
   { slug: 'kluay-kaek', name: 'กล้วยแขก', kcal: 350, serving: '1 ถุง', emoji: '🍌', category: 'fried', aliases: ['กล้วยทอด'] },
   { slug: 'corn-butter', name: 'ข้าวโพดคลุกเนย', kcal: 300, serving: '1 ถ้วย', emoji: '🌽', category: 'fried', aliases: ['ข้าวโพด'] },
@@ -452,7 +452,7 @@ export const POPULAR_FOODS: FoodItem[] = [
   { slug: 'hoy-malaeng-poo', name: 'หอยแมลงภู่อบ', kcal: 300, serving: '1 จาน', emoji: '🦪', category: 'seafood', aliases: ['หอยอบ'] },
   { slug: 'pla-muek-yang', name: 'ปลาหมึกย่าง', kcal: 250, serving: '1 จาน', emoji: '🦑', category: 'seafood', aliases: ['ปลาหมึก'] },
   { slug: 'pla-nueng-manao', name: 'ปลานึ่งมะนาว', kcal: 400, serving: '1 ตัว', emoji: '🐟', category: 'seafood', aliases: ['ปลานึ่ง'] },
-  { slug: 'pla-tod-nampla', name: 'ปลากะพงทอดน้ำปลา', kcal: 650, serving: '1 ตัว', emoji: '🐟', category: 'seafood', aliases: ['ปลาทอด'] },
+  { slug: 'pla-tod-nampla', name: 'ปลากะพงทอดน้ำปลา', kcal: 650, serving: '1 ตัว', emoji: '🐟', category: 'seafood', aliases: ['ปลาทอด', 'ปลากระพงทอดน้ำปลา', 'ปลากระพงทอด'] },
   { slug: 'kung-ob-woonsen', name: 'กุ้งอบวุ้นเส้น', kcal: 600, serving: '1 จาน', emoji: '🦐', category: 'seafood' },
 
   /* ---------------- ญี่ปุ่น / เกาหลี ---------------- */
@@ -475,8 +475,8 @@ export const POPULAR_FOODS: FoodItem[] = [
   { slug: 'croissant', name: 'ครัวซองต์เนย', kcal: 330, serving: '1 ชิ้น', emoji: '🥐', category: 'breakfast', aliases: ['ครัวซอง', 'croissant'] },
   { slug: 'croissant-salted-egg', name: 'ครัวซองต์ไส้ไข่เค็ม', kcal: 480, serving: '1 ชิ้น', emoji: '🥐', category: 'breakfast', aliases: ['ครัวซองไข่เค็ม'] },
   { slug: 'toast-butter', name: 'ขนมปังปิ้งเนยนม', kcal: 400, serving: '1 แผ่นหนา', emoji: '🍞', category: 'breakfast', aliases: ['ขนมปังปิ้ง', 'ขนมปังสังขยา'] },
-  { slug: 'sandwich-ham', name: 'แซนด์วิชแฮมชีส', kcal: 350, serving: '1 ชิ้น', emoji: '🥪', category: 'breakfast', aliases: ['แซนด์วิช'] },
-  { slug: 'kai-krata', name: 'ไข่กระทะ', kcal: 450, serving: '1 กระทะ', emoji: '🍳', category: 'breakfast' },
+  { slug: 'sandwich-ham', name: 'แซนด์วิชแฮมชีส', kcal: 350, serving: '1 ชิ้น', emoji: '🥪', category: 'breakfast', aliases: ['แซนด์วิช', 'แซนวิช', 'แซนวิชแฮมชีส', 'แซนด์วิชแฮม'] },
+  { slug: 'kai-krata', name: 'ไข่กระทะ', kcal: 450, serving: '1 กระทะ', emoji: '🍳', category: 'breakfast', aliases: ['ไข่กระทะ', 'ไข่กะทะ', 'ไข่กระทะเวียดนาม'] },
   { slug: 'nam-tao-hu', name: 'ปาท่องโก๋ + น้ำเต้าหู้', kcal: 400, serving: '1 ชุด', emoji: '🥛', category: 'breakfast', aliases: ['น้ำเต้าหู้'] },
   { slug: 'pancake', name: 'แพนเค้ก', kcal: 520, serving: '3 ชิ้น', emoji: '🥞', category: 'breakfast', aliases: ['แพนเค้ก'] },
   { slug: 'roti', name: 'โรตีกล้วยไข่ราดนม', kcal: 600, serving: '1 ชิ้น', emoji: '🥞', category: 'breakfast', aliases: ['โรตี', 'roti'] },
