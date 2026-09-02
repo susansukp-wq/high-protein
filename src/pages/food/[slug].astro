@@ -82,12 +82,43 @@ const related = POPULAR_FOODS.filter(
   (f) => f.category === food.category && f.slug !== food.slug,
 ).slice(0, 6)
 
-const title = isZeroCalorie
-  ? `${food.name} กี่แคลอรี่? คำตอบคือ 0 — ไม่ต้องชดใช้อะไรทั้งนั้น`
-  : `${food.name} กี่แคลอรี่? ${food.kcal.toLocaleString()} kcal ต้องออกกำลังกายกี่นาที`
+/**
+ * ทำไม title ถึงไม่บอกตัวเลขแคลอรี่แล้ว
+ *
+ * Search Console 28 วันแรกชี้ชัดว่าเราตอบคำถามจบตั้งแต่ในหน้าผลค้นหา
+ *   /food/*  title บอก "450 kcal"  → 3,063 impressions · CTR 0.62%
+ *   /burn/*  title ไม่บอกตัวเลข     →   506 impressions · CTR 1.98%
+ *   หน้าแรก  title ไม่บอกตัวเลข     →    60 impressions · CTR 11.67%
+ * ทั้งสามกลุ่มอันดับใกล้เคียงกัน ต่างกันแค่ว่า title เฉลยคำตอบหรือเปล่า
+ *
+ * คนค้น "ไข่กระทะกี่แคล" อ่านเจอ "450 kcal" ในชื่อเรื่องก็ได้คำตอบครบแล้ว
+ * ไม่มีเหตุผลต้องกดเข้ามา จึงเปลี่ยนไปชูสิ่งที่ snippet ให้ไม่ได้แทน
+ * คือตัวเลขที่คำนวณตามน้ำหนักตัวของคนคนนั้นเอง
+ *
+ * ตัวเลขยังอยู่ครบในเนื้อหาและใน description ไม่ได้ซ่อนจาก Google
+ */
+/** มือถือแสดง title ราว 55–60 ตัวอักษร ยาวกว่านั้นถูกตัดทิ้ง */
+const TITLE_BUDGET = 60
+
+/** เรียงจากยาวสุดไปสั้นสุด — เลือกอันแรกที่ยังอยู่ในงบ */
+const TITLE_HOOKS = [
+  ' กี่แคลอรี่? ต้องวิ่งกี่นาที คำนวณตามน้ำหนักคุณ',
+  ' กี่แคลอรี่? ต้องวิ่งกี่นาทีถึงหมด',
+  ' กี่แคลอรี่? ต้องวิ่งกี่นาที',
+  ' กี่แคลอรี่?',
+]
+
+function buildFoodTitle(name: string, kcalZero: boolean): string {
+  if (kcalZero) return `${name} กี่แคลอรี่? คำตอบคือ 0 — ไม่ต้องชดใช้อะไรทั้งนั้น`
+
+  const fit = TITLE_HOOKS.find((hook) => name.length + hook.length <= TITLE_BUDGET)
+  return name + (fit ?? TITLE_HOOKS[TITLE_HOOKS.length - 1]!)
+}
+
+const title = buildFoodTitle(food.name, isZeroCalorie)
 const description = isZeroCalorie
   ? `${food.name} ไม่มีพลังงานเลยสักแคลอรี่ กินเท่าไหร่ก็ไม่ต้องออกกำลังกายชดใช้ ดูว่าเครื่องดื่มตัวไหนบ้างที่แลกมาด้วยการวิ่งเป็นชั่วโมง`
-  : `${food.name} (${food.serving}) ให้พลังงาน ${food.kcal.toLocaleString()} แคลอรี่ เทียบเท่าข้าวสวย ${riceEquivalent} จาน ดูว่าต้องวิ่ง ว่ายน้ำ หรือต่อยมวยกี่นาทีถึงจะเผาผลาญหมด คำนวณจากค่า METs จริง`
+  : `กิน${food.name} 1 ${food.serving} แล้วต้องออกกำลังกายนานแค่ไหนถึงจะหมด? กรอกน้ำหนักตัวจริงแล้วดูคำตอบเฉพาะของคุณ เทียบ 10 กิจกรรมพร้อมกัน (${food.kcal.toLocaleString()} แคลอรี่ · เท่าข้าวสวย ${riceEquivalent} จาน)`
 
 const jsonLd = [
   {
